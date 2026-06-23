@@ -385,6 +385,7 @@ main {
 .diagnosis-shell {
   width: min(980px, calc(100% - 2rem));
   margin: 2rem auto 0;
+  overflow-anchor: none;
   padding: 1.5rem;
 }
 

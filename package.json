@@ -1,0 +1,38 @@
+{
+  "name": "digcomp-navigator",
+  "version": "1.0.0",
+  "description": "DigComp 3.0 기반 공익활동가의 디지털 역량 자가 진단 사이트",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/h2dj/digcomp-navigator.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/h2dj/digcomp-navigator/issues"
+  },
+  "homepage": "https://github.com/h2dj/digcomp-navigator#readme",
+  "dependencies": {
+    "next": "^16.2.9",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "recharts": "^3.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.0.0",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^6.0.3"
+  },
+  "overrides": {
+    "postcss": "8.5.15"
+  }
+}

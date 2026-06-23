@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { digcompAreas, responseScale } from "@/data/digcomp";
 import { buildAssessmentResult, saveResult, storageKeys, type AnswerMap } from "@/lib/scoring";
@@ -9,6 +9,7 @@ export default function DiagnosisPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<AnswerMap>({});
+  const hasMounted = useRef(false);
   const currentArea = digcompAreas[step];
   const totalQuestions = useMemo(
     () => digcompAreas.reduce((sum, area) => sum + area.competencies.reduce((inner, item) => inner + item.prompts.length, 0), 0),
@@ -31,6 +32,15 @@ export default function DiagnosisPage() {
   useEffect(() => {
     window.localStorage.setItem(storageKeys.draftAnswers, JSON.stringify(answers));
   }, [answers]);
+
+  useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      return;
+    }
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step]);
 
   const currentKeys = currentArea.competencies.flatMap((competency) =>
     competency.prompts.map((_, index) => `${competency.id}:${index}`),

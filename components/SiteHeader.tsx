@@ -12,7 +12,7 @@ export function SiteHeader() {
   return (
     <header className="site-header">
       <Link href="/" className="brand" aria-label="DigComp Navigator 홈">
-        <span className="brand-mark">D</span>
+        <img className="brand-logo" src="/logo.svg" alt="IT 로고" />
         <span>
           <strong>DigComp Navigator</strong>
           <small>비영리 디지털 역량 진단</small>

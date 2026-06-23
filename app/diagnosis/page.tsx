@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { digcompAreas, responseScale } from "@/data/digcomp";
 import { buildAssessmentResult, saveResult, storageKeys, type AnswerMap } from "@/lib/scoring";
@@ -9,6 +9,7 @@ export default function DiagnosisPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<AnswerMap>({});
+  const shouldResetScroll = useRef(false);
   const currentArea = digcompAreas[step];
   const totalQuestions = useMemo(
     () => digcompAreas.reduce((sum, area) => sum + area.competencies.reduce((inner, item) => inner + item.prompts.length, 0), 0),
@@ -32,6 +33,20 @@ export default function DiagnosisPage() {
     window.localStorage.setItem(storageKeys.draftAnswers, JSON.stringify(answers));
   }, [answers]);
 
+  useLayoutEffect(() => {
+    if (!shouldResetScroll.current) return;
+    shouldResetScroll.current = false;
+
+    resetPageScroll();
+    const frame = requestAnimationFrame(resetPageScroll);
+    const timeout = window.setTimeout(resetPageScroll, 80);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      window.clearTimeout(timeout);
+    };
+  }, [step]);
+
   const currentKeys = currentArea.competencies.flatMap((competency) =>
     competency.prompts.map((_, index) => `${competency.id}:${index}`),
   );
@@ -43,12 +58,13 @@ export default function DiagnosisPage() {
   }
 
   function moveToStep(nextStep: number) {
+    const activeElement = document.activeElement;
+    if (activeElement instanceof HTMLElement) {
+      activeElement.blur();
+    }
+
+    shouldResetScroll.current = true;
     setStep(nextStep);
-    requestAnimationFrame(() => {
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
-      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    });
   }
 
   function completeAssessment() {
@@ -141,4 +157,16 @@ export default function DiagnosisPage() {
       </section>
     </>
   );
+}
+
+function resetPageScroll() {
+  const previousScrollBehavior = document.documentElement.style.scrollBehavior;
+  const scrollingElement = document.scrollingElement ?? document.documentElement;
+
+  document.documentElement.style.scrollBehavior = "auto";
+  scrollingElement.scrollTop = 0;
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+  window.scrollTo(0, 0);
+  document.documentElement.style.scrollBehavior = previousScrollBehavior;
 }

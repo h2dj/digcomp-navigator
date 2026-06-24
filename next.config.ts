@@ -2,7 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  // Next.js 16 dev server defaults to localhost; allow 127.0.0.1 for HMR and dev assets.
+  output: "standalone",
+  poweredByHeader: false,
+  // Dev only: allow 127.0.0.1 when the dev server starts on localhost.
   allowedDevOrigins: ["127.0.0.1"],
 };
 

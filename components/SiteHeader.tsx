@@ -1,7 +1,11 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { BrandMark } from "@/components/BrandMark";
 
 const navigation = [
-  { href: "/digcomp", label: "DigComp 안내" },
+  { href: "/digcomp", label: "DigComp 소개" },
   { href: "/diagnosis", label: "진단하기" },
   { href: "/stats", label: "공개 통계" },
   { href: "/dashboard", label: "나의 대시보드" },
@@ -9,25 +13,24 @@ const navigation = [
 ];
 
 export function SiteHeader() {
+  const pathname = usePathname();
+
   return (
     <header className="site-header">
-      <Link href="/" className="brand" aria-label="DigComp Navigator 홈">
-        <img
-          className="brand-logo"
-          src="https://cdn.ictact.kr/%EB%A1%9C%EA%B3%A0%EB%8B%A8%EC%B6%95%ED%98%95%20%EA%B0%80%EB%A1%9C.png"
-          alt="IT 로고"
-        />
-        <span>
-          <strong>DigComp Navigator</strong>
-          <small>비영리 디지털 역량 진단</small>
-        </span>
+      <Link href="/" className="brand" aria-label="디지털역량진단 홈">
+        <BrandMark />
+        <strong>디지털역량진단</strong>
       </Link>
       <nav aria-label="주요 메뉴">
-        {navigation.map((item) => (
-          <Link key={item.href} href={item.href}>
-            {item.label}
-          </Link>
-        ))}
+        {navigation.map((item) => {
+          const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
+
+          return (
+            <Link key={item.href} href={item.href} className={isActive ? "active" : undefined} aria-current={isActive ? "page" : undefined}>
+              {item.label}
+            </Link>
+          );
+        })}
       </nav>
     </header>
   );

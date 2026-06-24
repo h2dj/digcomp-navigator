@@ -50,11 +50,11 @@ export const proficiencyLevels = [
 ] as const;
 
 export const responseScale = [
-  { value: 1, label: "거의 못함", helper: "설명이 있어도 어렵다" },
-  { value: 2, label: "도움 필요", helper: "도움이 있으면 가능하다" },
-  { value: 3, label: "보통", helper: "익숙한 과업은 혼자 한다" },
-  { value: 4, label: "자신 있음", helper: "상황에 맞게 응용한다" },
-  { value: 5, label: "매우 자신", helper: "타인에게 안내할 수 있다" },
+  { value: 1, label: "아직 어려워요", helper: "" },
+  { value: 2, label: "들어는 봤어요", helper: "" },
+  { value: 3, label: "가끔 해봤어요", helper: "" },
+  { value: 4, label: "할 수 있어요", helper: "" },
+  { value: 5, label: "자신 있어요", helper: "" },
 ] as const;
 
 export const digcompAreas: DigcompArea[] = [
@@ -338,4 +338,28 @@ export const digcompAreas: DigcompArea[] = [
 
 export const allCompetencies = digcompAreas.flatMap((area) =>
   area.competencies.map((competency) => ({ ...competency, areaId: area.id })),
+);
+
+export type AssessmentQuestion = {
+  id: string;
+  competencyId: string;
+  promptIndex: number;
+  areaId: DigcompAreaId;
+  areaTitle: string;
+  categoryLabel: string;
+  prompt: string;
+};
+
+const questionsPerArea = 3;
+
+export const assessmentQuestions: AssessmentQuestion[] = digcompAreas.flatMap((area) =>
+  area.competencies.slice(0, questionsPerArea).map((competency) => ({
+    id: `${competency.id}:0`,
+    competencyId: competency.id,
+    promptIndex: 0,
+    areaId: area.id,
+    areaTitle: area.title,
+    categoryLabel: competency.shortTitle,
+    prompt: competency.prompts[0],
+  })),
 );

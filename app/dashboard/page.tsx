@@ -17,14 +17,24 @@ export default function DashboardPage() {
 
   if (!latest) {
     return (
-      <section className="page-title">
-        <span className="eyebrow">Dashboard</span>
-        <h1>나의 대시보드</h1>
-        <p>최근 진단 결과와 변화 추이를 보려면 먼저 진단을 완료해주세요.</p>
-        <Link className="button" href="/diagnosis">
-          첫 진단 시작하기
-        </Link>
-      </section>
+      <>
+        <section className="page-title">
+          <h1>나의 대시보드</h1>
+          <p>진단을 완료하면 여기에서 나의 결과를 볼 수 있어요.</p>
+        </section>
+        <div className="empty-state">
+          <span className="empty-state-icon" aria-hidden="true">
+            👤
+          </span>
+          <h2>아직 진단 결과가 없어요</h2>
+          <p className="muted">
+            진단을 완료하면 나의 역량 프로필과 맞춤 학습 가이드를 확인할 수 있어요.
+          </p>
+          <Link className="button" href="/diagnosis">
+            진단하러 가기 &gt;
+          </Link>
+        </div>
+      </>
     );
   }
 

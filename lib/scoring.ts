@@ -49,6 +49,7 @@ export const storageKeys = {
   history: "digcomp-navigator:history",
   profile: "digcomp-navigator:profile",
   draftAnswers: "digcomp-navigator:draft-answers",
+  draftQuestionIndex: "digcomp-navigator:draft-question-index",
 };
 
 export const cohortAverages: Record<DigcompAreaId, number> = {
@@ -107,18 +108,39 @@ export function formatScore(score: number): string {
 }
 
 export function buildAssessmentResult(answers: AnswerMap): AssessmentResult {
+  const directScores = new Map<string, number>();
+
+  for (const competency of allCompetencies) {
+    const answered = competency.prompts
+      .map((_, index) => answers[`${competency.id}:${index}`])
+      .filter((value): value is number => value !== undefined);
+
+    if (answered.length > 0) {
+      directScores.set(competency.id, round(average(answered.map((raw) => raw - 1))));
+    }
+  }
+
   const competencyScores = allCompetencies.map((competency) => {
-    const promptScores = competency.prompts.map((_, index) => {
-      const raw = answers[`${competency.id}:${index}`] ?? 1;
-      return raw - 1;
-    });
-    const score = average(promptScores);
+    if (directScores.has(competency.id)) {
+      return {
+        competencyId: competency.id,
+        areaId: competency.areaId,
+        title: competency.shortTitle,
+        score: directScores.get(competency.id)!,
+      };
+    }
+
+    const areaAssessed = allCompetencies
+      .filter((item) => item.areaId === competency.areaId && directScores.has(item.id))
+      .map((item) => directScores.get(item.id)!);
+
+    const score = areaAssessed.length > 0 ? round(average(areaAssessed)) : 1;
 
     return {
       competencyId: competency.id,
       areaId: competency.areaId,
       title: competency.shortTitle,
-      score: round(score),
+      score,
     };
   });
 
@@ -171,6 +193,7 @@ export function saveResult(result: AssessmentResult): void {
   window.localStorage.setItem(storageKeys.latestResult, JSON.stringify(result));
   window.localStorage.setItem(storageKeys.history, JSON.stringify(nextHistory));
   window.localStorage.removeItem(storageKeys.draftAnswers);
+  window.localStorage.removeItem(storageKeys.draftQuestionIndex);
 }
 
 export function getLatestResult(): AssessmentResult | null {

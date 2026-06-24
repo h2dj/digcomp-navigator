@@ -15,14 +15,22 @@ export default function ResultsPage() {
 
   if (!result) {
     return (
-      <section className="page-title">
-        <span className="eyebrow">Result</span>
-        <h1>저장된 결과가 없습니다</h1>
-        <p>진단을 완료하면 이곳에서 영역별 점수, 강점과 개발 필요 역량을 확인할 수 있습니다.</p>
-        <Link className="button" href="/diagnosis">
-          진단 시작하기
-        </Link>
-      </section>
+      <>
+        <section className="page-title">
+          <h1>저장된 결과가 없습니다</h1>
+          <p>진단을 완료하면 이곳에서 영역별 점수, 강점과 개발 필요 역량을 확인할 수 있습니다.</p>
+        </section>
+        <div className="empty-state">
+          <span className="empty-state-icon" aria-hidden="true">
+            📊
+          </span>
+          <h2>아직 진단 결과가 없어요</h2>
+          <p className="muted">진단을 완료하면 나의 역량 프로필을 확인할 수 있어요.</p>
+          <Link className="button" href="/diagnosis">
+            진단 시작하기 &gt;
+          </Link>
+        </div>
+      </>
     );
   }
 

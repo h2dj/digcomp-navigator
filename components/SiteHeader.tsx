@@ -12,7 +12,11 @@ export function SiteHeader() {
   return (
     <header className="site-header">
       <Link href="/" className="brand" aria-label="DigComp Navigator 홈">
-        <img className="brand-logo" src="/logo.svg" alt="IT 로고" />
+        <img
+          className="brand-logo"
+          src="https://cdn.ictact.kr/%EB%A1%9C%EA%B3%A0%EB%8B%A8%EC%B6%95%ED%98%95%20%EA%B0%80%EB%A1%9C.png"
+          alt="IT 로고"
+        />
         <span>
           <strong>DigComp Navigator</strong>
           <small>비영리 디지털 역량 진단</small>

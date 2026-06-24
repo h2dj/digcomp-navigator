@@ -9,6 +9,7 @@ export default function DiagnosisPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<AnswerMap>({});
+  const [validationMessage, setValidationMessage] = useState("");
   const shouldResetScroll = useRef(false);
   const currentArea = digcompAreas[step];
   const totalQuestions = useMemo(
@@ -50,10 +51,11 @@ export default function DiagnosisPage() {
   const currentKeys = currentArea.competencies.flatMap((competency) =>
     competency.prompts.map((_, index) => `${competency.id}:${index}`),
   );
-  const isCurrentComplete = currentKeys.every((key) => answers[key]);
+  const remainingQuestions = currentKeys.filter((key) => !answers[key]).length;
   const isLastStep = step === digcompAreas.length - 1;
 
   function updateAnswer(key: string, value: number) {
+    setValidationMessage("");
     setAnswers((previous) => ({ ...previous, [key]: value }));
   }
 
@@ -64,13 +66,44 @@ export default function DiagnosisPage() {
     }
 
     shouldResetScroll.current = true;
+    setValidationMessage("");
     setStep(nextStep);
   }
 
+  function handleNextStep() {
+    const firstUnansweredKey = getFirstUnansweredKey();
+    if (firstUnansweredKey) {
+      showIncompleteMessage(firstUnansweredKey);
+      return;
+    }
+
+    moveToStep(step + 1);
+  }
+
   function completeAssessment() {
+    const firstUnansweredKey = getFirstUnansweredKey();
+    if (firstUnansweredKey) {
+      showIncompleteMessage(firstUnansweredKey);
+      return;
+    }
+
     const result = buildAssessmentResult(answers);
     saveResult(result);
     router.push("/results");
+  }
+
+  function getFirstUnansweredKey() {
+    return currentKeys.find((key) => !answers[key]);
+  }
+
+  function showIncompleteMessage(firstUnansweredKey: string) {
+    setValidationMessage(`이 영역에서 아직 ${remainingQuestions}개 문항에 응답하지 않았습니다.`);
+    requestAnimationFrame(() => {
+      document.getElementById(`question-${firstUnansweredKey}`)?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    });
   }
 
   return (
@@ -91,6 +124,11 @@ export default function DiagnosisPage() {
         <p className="muted">
           {step + 1} / {digcompAreas.length} 영역 · 전체 {progress}% 완료
         </p>
+        {validationMessage ? (
+          <p className="validation-message" role="alert">
+            {validationMessage}
+          </p>
+        ) : null}
 
         <div className="card">
           <span className="area-number">{currentArea.number}</span>
@@ -107,7 +145,7 @@ export default function DiagnosisPage() {
               const key = `${competency.id}:${promptIndex}`;
 
               return (
-                <fieldset className="question-card" key={key}>
+                <fieldset className="question-card" id={`question-${key}`} key={key}>
                   <legend>{prompt}</legend>
                   <div className="scale">
                     {responseScale.map((scale) => (
@@ -135,11 +173,11 @@ export default function DiagnosisPage() {
             이전 영역
           </button>
           {!isLastStep ? (
-            <button className="button" type="button" disabled={!isCurrentComplete} onClick={() => moveToStep(step + 1)}>
+            <button className="button" type="button" onClick={handleNextStep}>
               다음 영역
             </button>
           ) : (
-            <button className="button" type="button" disabled={!isCurrentComplete} onClick={completeAssessment}>
+            <button className="button" type="button" onClick={completeAssessment}>
               결과 보기
             </button>
           )}
@@ -148,6 +186,7 @@ export default function DiagnosisPage() {
             type="button"
             onClick={() => {
               setAnswers({});
+              setValidationMessage("");
               window.localStorage.removeItem(storageKeys.draftAnswers);
             }}
           >

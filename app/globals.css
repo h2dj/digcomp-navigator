@@ -71,15 +71,11 @@ main {
   gap: 0.75rem;
 }
 
-.brand-mark {
-  display: grid;
-  width: 2.75rem;
-  height: 2.75rem;
-  place-items: center;
-  border-radius: 1rem;
-  background: linear-gradient(135deg, var(--primary), var(--accent));
-  color: #fff;
-  font-weight: 800;
+.brand-logo {
+  display: block;
+  width: 7.6rem;
+  height: 2.45rem;
+  object-fit: contain;
 }
 
 .brand small {
@@ -385,6 +381,7 @@ main {
 .diagnosis-shell {
   width: min(980px, calc(100% - 2rem));
   margin: 2rem auto 0;
+  overflow-anchor: none;
   padding: 1.5rem;
 }
 

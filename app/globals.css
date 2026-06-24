@@ -90,23 +90,11 @@ main {
   letter-spacing: -0.02em;
 }
 
-.brand-mark {
-  display: inline-grid;
-  width: 2.2rem;
-  height: 2.2rem;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--sage-dark);
-  color: #fff;
-  font-family: var(--font-serif);
-  font-size: 1.1rem;
-  font-weight: 700;
-}
-
-.brand-mark-compact {
-  width: 1.8rem;
-  height: 1.8rem;
-  font-size: 0.95rem;
+.brand-logo {
+  display: block;
+  width: 7.6rem;
+  height: 2.45rem;
+  object-fit: contain;
 }
 
 .site-header nav {
@@ -159,6 +147,11 @@ main {
   color: var(--ink);
 }
 
+.footer-brand .brand-logo {
+  width: 5.5rem;
+  height: 1.8rem;
+}
+
 .footer-brand strong {
   font-size: 0.95rem;
 }
@@ -166,6 +159,21 @@ main {
 .footer-copy {
   margin: 0;
   font-size: 0.8rem;
+}
+
+.footer-provider {
+  margin: 0;
+}
+
+.footer-provider a {
+  color: var(--sage-dark);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.footer-provider a:hover {
+  color: var(--cta);
 }
 
 .footer-links {

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BrandMark } from "@/components/BrandMark";
+import { brandLogoUrl } from "@/lib/brand";
 
 const navigation = [
   { href: "/digcomp", label: "DigComp 소개" },
@@ -18,7 +18,7 @@ export function SiteHeader() {
   return (
     <header className="site-header">
       <Link href="/" className="brand" aria-label="디지털역량진단 홈">
-        <BrandMark />
+        <img className="brand-logo" src={brandLogoUrl} alt="IT 로고" />
         <strong>디지털역량진단</strong>
       </Link>
       <nav aria-label="주요 메뉴">

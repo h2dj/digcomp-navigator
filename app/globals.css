@@ -498,6 +498,16 @@ main {
   padding: 1rem;
 }
 
+.validation-message {
+  border: 1px solid #fed7aa;
+  border-radius: 1rem;
+  background: #fff7ed;
+  color: #9a3412;
+  font-weight: 800;
+  margin: 1rem 0;
+  padding: 0.85rem 1rem;
+}
+
 @media (max-width: 900px) {
   .site-header,
   .site-footer {

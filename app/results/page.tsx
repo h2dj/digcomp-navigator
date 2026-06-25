@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AreaComparisonChart, RadarScoreChart } from "@/components/ScoreCharts";
 import { ResultHighlights } from "@/components/ResultHighlights";
+import { ResultSharePanel } from "@/components/ResultSharePanel";
 import { getLatestResult, formatScore, type AssessmentResult } from "@/lib/scoring";
 
 export default function ResultsPage() {
@@ -40,8 +41,8 @@ export default function ResultsPage() {
         <span className="eyebrow">Result</span>
         <h1>나의 디지털 역량 결과</h1>
         <p>
-          5점 척도 응답을 DigComp 숙련도 0~4점으로 환산했습니다. 결과는 현재 브라우저의 진단 이력에
-          저장되었습니다.
+          5점 척도 응답을 DigComp 숙련도 0~4점으로 환산했습니다. 결과는 브라우저에 저장되며, 아래에서
+          파일 저장·이메일·SNS 공유도 할 수 있습니다.
         </p>
       </section>
 
@@ -68,6 +69,10 @@ export default function ResultsPage() {
           </article>
           <RadarScoreChart result={result} />
         </div>
+      </section>
+
+      <section className="section compact">
+        <ResultSharePanel result={result} />
       </section>
 
       <section className="section compact">

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { GrowthLineChart, RadarScoreChart } from "@/components/ScoreCharts";
 import { ResultHighlights } from "@/components/ResultHighlights";
+import { ResultSharePanel } from "@/components/ResultSharePanel";
 import { formatScore, getHistory, getLatestResult, type AssessmentResult } from "@/lib/scoring";
 
 export default function DashboardPage() {
@@ -83,6 +84,10 @@ export default function DashboardPage() {
           </article>
           <RadarScoreChart result={latest} />
         </div>
+      </section>
+
+      <section className="section compact">
+        <ResultSharePanel result={latest} />
       </section>
 
       <section className="section compact">

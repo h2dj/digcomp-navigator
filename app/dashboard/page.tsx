@@ -1,20 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { GrowthLineChart, RadarScoreChart } from "@/components/ScoreCharts";
 import { ResultHighlights } from "@/components/ResultHighlights";
 import { ResultSharePanel } from "@/components/ResultSharePanel";
 import { formatScore, getHistory, getLatestResult, type AssessmentResult } from "@/lib/scoring";
+import { useUserDataRefresh } from "@/lib/use-user-data-refresh";
 
 export default function DashboardPage() {
   const [latest, setLatest] = useState<AssessmentResult | null>(null);
   const [history, setHistory] = useState<AssessmentResult[]>([]);
 
-  useEffect(() => {
+  useUserDataRefresh(useCallback(() => {
     setLatest(getLatestResult());
     setHistory(getHistory());
-  }, []);
+  }, []));
 
   if (!latest) {
     return (

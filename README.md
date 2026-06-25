@@ -33,7 +33,17 @@ npm start
 
 ## 프로덕션 배포
 
-이 MVP는 **서버 API·DB 없이** 브라우저 `localStorage`에 진단 결과를 저장합니다. 배포 시 별도 비밀키가 필요하지 않습니다.
+브라우저 `localStorage`와 **서버 DB(Neon PostgreSQL)** 에 이용자 정보·진단 결과를 함께 저장합니다.
+
+### 환경 변수 (Vercel)
+
+| 변수 | 용도 |
+|------|------|
+| `DATABASE_URL` | 이용자·진단 결과 영구 저장 (Neon) |
+| `RESEND_API_KEY` / `EMAIL_FROM` | 결과 이메일 발송 |
+| `NEXT_PUBLIC_SITE_URL` | SNS 공유 링크 |
+
+DB 스키마는 `scripts/schema.sql`을 참고하세요. API 첫 호출 시 테이블이 자동 생성됩니다.
 
 ### 방법 A — Vercel (권장, 가장 빠름)
 
@@ -41,7 +51,7 @@ npm start
 2. [vercel.com](https://vercel.com)에서 GitHub 계정으로 로그인합니다.
 3. **Add New Project** → `digcomp-navigator` 저장소를 선택합니다.
 4. Framework Preset: **Next.js** (자동 감지)
-5. Environment Variables: 비워 두고 **Deploy**를 누릅니다.
+5. Environment Variables에 `DATABASE_URL` 등을 등록하고 **Deploy**합니다.
 6. 배포가 끝나면 `https://프로젝트명.vercel.app` URL을 테스터에게 공유합니다.
 
 이후 `main` 브랜치에 push할 때마다 자동으로 재배포됩니다.
@@ -68,6 +78,7 @@ npm start
 
 ### 테스터에게 알릴 점
 
-- 진단 결과는 **각자 브라우저**에만 저장됩니다 (기기·브라우저를 바꾸면 이전 결과가 없을 수 있음).
-- 시크릿/프라이빗 모드에서는 창을 닫으면 데이터가 사라질 수 있습니다.
+- 진단 결과는 브라우저와 서버에 저장됩니다. **프로필에 이메일**을 입력하면 다른 기기에서도 불러올 수 있습니다.
+- `DATABASE_URL` 미설정 시 서버 저장은 되지 않고 브라우저에만 남습니다.
+- 시크릿/프라이빗 모드에서는 창을 닫으면 로컬 데이터가 사라질 수 있습니다.
 - 공개 통계(`/stats`)는 데모용 고정 수치입니다.

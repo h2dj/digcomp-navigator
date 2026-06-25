@@ -33,6 +33,7 @@ export type Profile = {
   organizationType: string;
   years: string;
   emailOptIn: boolean;
+  email?: string;
 };
 
 export type ProficiencyLevel = "기초" | "중급" | "고급" | "전문가";
@@ -45,6 +46,7 @@ export const defaultProfile: Profile = {
 };
 
 export const storageKeys = {
+  userId: "digcomp-navigator:user-id",
   latestResult: "digcomp-navigator:latest-result",
   history: "digcomp-navigator:history",
   profile: "digcomp-navigator:profile",

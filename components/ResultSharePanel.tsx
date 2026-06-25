@@ -17,7 +17,8 @@ import {
   formatShareMessage,
   shareResultNative,
 } from "@/lib/result-share";
-import type { AssessmentResult } from "@/lib/scoring";
+import { getProfile, saveProfile, type AssessmentResult } from "@/lib/scoring";
+import { pushUserDataToServer } from "@/lib/user-sync";
 
 type ResultSharePanelProps = {
   result: AssessmentResult;
@@ -74,6 +75,12 @@ export function ResultSharePanel({ result }: ResultSharePanelProps) {
       }
 
       setFeedback({ type: "success", message: `${email}로 결과를 보냈습니다.` });
+
+      const profile = getProfile();
+      const nextProfile = { ...profile, email };
+      saveProfile(nextProfile);
+      void pushUserDataToServer({ profile: nextProfile, result });
+
       setEmail("");
     } catch {
       setFeedback({ type: "error", message: "이메일 발송에 실패했습니다. 잠시 후 다시 시도해주세요." });

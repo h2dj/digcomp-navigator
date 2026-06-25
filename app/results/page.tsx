@@ -1,18 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { AreaComparisonChart, RadarScoreChart } from "@/components/ScoreCharts";
 import { ResultHighlights } from "@/components/ResultHighlights";
 import { ResultSharePanel } from "@/components/ResultSharePanel";
 import { getLatestResult, formatScore, type AssessmentResult } from "@/lib/scoring";
+import { useUserDataRefresh } from "@/lib/use-user-data-refresh";
 
 export default function ResultsPage() {
   const [result, setResult] = useState<AssessmentResult | null>(null);
 
-  useEffect(() => {
+  const refresh = useCallback(() => {
     setResult(getLatestResult());
   }, []);
+
+  useUserDataRefresh(refresh);
 
   if (!result) {
     return (

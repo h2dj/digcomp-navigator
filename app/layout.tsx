@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
+import { UserDataBootstrap } from "@/components/UserDataBootstrap";
 import { brandLogoUrl } from "@/lib/brand";
 import "./globals.css";
 
@@ -21,6 +22,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         />
       </head>
       <body>
+        <UserDataBootstrap />
         <SiteHeader />
         <main>{children}</main>
         <footer className="site-footer">

@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { assessmentQuestions, responseScale } from "@/data/digcomp";
 import { buildAssessmentResult, saveResult, storageKeys, type AnswerMap } from "@/lib/scoring";
+import { pushUserDataToServer } from "@/lib/user-sync";
 
 type Phase = "intro" | "questions";
 
@@ -81,6 +82,7 @@ export default function DiagnosisPage() {
 
     const result = buildAssessmentResult(nextAnswers);
     saveResult(result);
+    void pushUserDataToServer({ result });
     router.push("/results");
   }
 

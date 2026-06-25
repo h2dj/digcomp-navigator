@@ -1003,6 +1003,10 @@ main {
   gap: 1rem;
 }
 
+.form-grid-full {
+  grid-column: 1 / -1;
+}
+
 .field {
   display: grid;
   gap: 0.4rem;

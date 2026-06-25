@@ -1,15 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { formatScore, getHistory, type AssessmentResult } from "@/lib/scoring";
+import { useUserDataRefresh } from "@/lib/use-user-data-refresh";
 
 export default function HistoryPage() {
   const [history, setHistory] = useState<AssessmentResult[]>([]);
 
-  useEffect(() => {
+  const refresh = useCallback(() => {
     setHistory(getHistory());
   }, []);
+
+  useUserDataRefresh(refresh);
 
   return (
     <>

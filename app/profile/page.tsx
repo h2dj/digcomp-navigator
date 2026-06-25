@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { defaultProfile, getProfile, saveProfile, type Profile } from "@/lib/scoring";
+import { pushUserDataToServer } from "@/lib/user-sync";
 
 const roleOptions = ["실무 직원", "중간 관리자", "교육 담당자", "임원/대표"];
 const organizationOptions = ["시민사회단체", "복지기관", "재단", "협동조합", "기타"];
@@ -26,14 +27,25 @@ export default function ProfilePage() {
         <span className="eyebrow">Profile</span>
         <h1>프로필 설정</h1>
         <p>
-          직군, 조직 유형, 근무 연수는 통계 비교 분류에 활용됩니다. 이메일과 비밀번호 외의 정보는
-          선택 입력이라는 개인정보 보호 원칙을 따릅니다.
+          직군, 조직 유형, 근무 연수는 통계 비교 분류에 활용됩니다. 이메일을 입력하면 다른 기기에서도
+          결과를 불러올 수 있습니다.
         </p>
       </section>
 
       <section className="section compact">
         <article className="card">
           <div className="form-grid">
+            <div className="field form-grid-full">
+              <label htmlFor="email">이메일 (결과 복원용)</label>
+              <input
+                id="email"
+                type="email"
+                placeholder="example@organization.org"
+                value={profile.email ?? ""}
+                onChange={(event) => updateProfile("email", event.target.value)}
+                autoComplete="email"
+              />
+            </div>
             <div className="field">
               <label htmlFor="role">직군</label>
               <select id="role" value={profile.role} onChange={(event) => updateProfile("role", event.target.value)}>
@@ -80,6 +92,7 @@ export default function ProfilePage() {
               type="button"
               onClick={() => {
                 saveProfile(profile);
+                void pushUserDataToServer({ profile });
                 setSaved(true);
               }}
             >

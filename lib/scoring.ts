@@ -188,14 +188,19 @@ export function getHistory(): AssessmentResult[] {
   }
 }
 
+export function clearAssessmentDraft(): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(storageKeys.draftAnswers);
+  window.localStorage.removeItem(storageKeys.draftQuestionIndex);
+}
+
 export function saveResult(result: AssessmentResult): void {
   if (typeof window === "undefined") return;
   const history = getHistory();
   const nextHistory = [result, ...history].slice(0, 20);
   window.localStorage.setItem(storageKeys.latestResult, JSON.stringify(result));
   window.localStorage.setItem(storageKeys.history, JSON.stringify(nextHistory));
-  window.localStorage.removeItem(storageKeys.draftAnswers);
-  window.localStorage.removeItem(storageKeys.draftQuestionIndex);
+  clearAssessmentDraft();
 }
 
 export function getLatestResult(): AssessmentResult | null {

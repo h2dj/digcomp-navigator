@@ -5,7 +5,7 @@ import { useCallback, useState } from "react";
 import { AreaComparisonChart, RadarScoreChart } from "@/components/ScoreCharts";
 import { ResultHighlights } from "@/components/ResultHighlights";
 import { ResultSharePanel } from "@/components/ResultSharePanel";
-import { getLatestResult, formatScore, type AssessmentResult } from "@/lib/scoring";
+import { getLatestResult, formatScore, clearAssessmentDraft, type AssessmentResult } from "@/lib/scoring";
 import { useUserDataRefresh } from "@/lib/use-user-data-refresh";
 
 export default function ResultsPage() {
@@ -65,7 +65,7 @@ export default function ResultsPage() {
               <Link className="button" href="/dashboard">
                 대시보드로 이동
               </Link>
-              <Link className="button secondary" href="/diagnosis">
+              <Link className="button secondary" href="/diagnosis" onClick={() => clearAssessmentDraft()}>
                 다시 진단하기
               </Link>
             </div>

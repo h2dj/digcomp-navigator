@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { assessmentQuestions, responseScale } from "@/data/digcomp";
-import { buildAssessmentResult, saveResult, storageKeys, type AnswerMap } from "@/lib/scoring";
+import { buildAssessmentResult, clearAssessmentDraft, saveResult, storageKeys, type AnswerMap } from "@/lib/scoring";
 import { pushUserDataToServer } from "@/lib/user-sync";
 
 type Phase = "intro" | "questions";
@@ -18,10 +18,14 @@ const areaIcons: Record<string, string> = {
 
 export default function DiagnosisPage() {
   const router = useRouter();
+  const pathname = usePathname();
   const [phase, setPhase] = useState<Phase>("intro");
   const [questionIndex, setQuestionIndex] = useState(0);
+  const [maxVisitedIndex, setMaxVisitedIndex] = useState(0);
+  const [wentBack, setWentBack] = useState(false);
   const [answers, setAnswers] = useState<AnswerMap>({});
   const shouldResetScroll = useRef(false);
+  const skipDraftPersist = useRef(false);
   const totalQuestions = assessmentQuestions.length;
   const currentQuestion = assessmentQuestions[questionIndex];
   const answeredCount = assessmentQuestions.filter((question) => answers[question.id] !== undefined).length;
@@ -31,28 +35,42 @@ export default function DiagnosisPage() {
     const rawAnswers = window.localStorage.getItem(storageKeys.draftAnswers);
     const rawIndex = window.localStorage.getItem(storageKeys.draftQuestionIndex);
 
-    if (!rawAnswers) return;
+    if (!rawAnswers) {
+      setAnswers({});
+      setQuestionIndex(0);
+      setMaxVisitedIndex(0);
+      setWentBack(false);
+      setPhase("intro");
+      skipDraftPersist.current = false;
+      return;
+    }
 
     try {
       const parsedAnswers = JSON.parse(rawAnswers) as AnswerMap;
-      if (Object.keys(parsedAnswers).length === 0) return;
+      if (Object.keys(parsedAnswers).length === 0) {
+        clearAssessmentDraft();
+        return;
+      }
 
       setAnswers(parsedAnswers);
 
       const savedIndex = rawIndex ? Number.parseInt(rawIndex, 10) : 0;
       const firstUnanswered = assessmentQuestions.findIndex((question) => parsedAnswers[question.id] === undefined);
       const resumeIndex = firstUnanswered >= 0 ? firstUnanswered : Math.min(savedIndex, totalQuestions - 1);
+      const restoredMaxVisited =
+        firstUnanswered >= 0 ? firstUnanswered : Math.max(resumeIndex, totalQuestions - 1);
 
       setQuestionIndex(resumeIndex);
+      setMaxVisitedIndex(restoredMaxVisited);
+      setWentBack(false);
       setPhase("questions");
     } catch {
-      window.localStorage.removeItem(storageKeys.draftAnswers);
-      window.localStorage.removeItem(storageKeys.draftQuestionIndex);
+      clearAssessmentDraft();
     }
-  }, [totalQuestions]);
+  }, [totalQuestions, pathname]);
 
   useEffect(() => {
-    if (phase !== "questions") return;
+    if (phase !== "questions" || skipDraftPersist.current) return;
     window.localStorage.setItem(storageKeys.draftAnswers, JSON.stringify(answers));
     window.localStorage.setItem(storageKeys.draftQuestionIndex, String(questionIndex));
   }, [answers, questionIndex, phase]);
@@ -64,9 +82,23 @@ export default function DiagnosisPage() {
   }, [questionIndex, phase]);
 
   function startAssessment() {
+    clearAssessmentDraft();
+    skipDraftPersist.current = false;
     shouldResetScroll.current = true;
+    setAnswers({});
     setPhase("questions");
     setQuestionIndex(0);
+    setMaxVisitedIndex(0);
+    setWentBack(false);
+  }
+
+  function completeAssessment(nextAnswers: AnswerMap) {
+    skipDraftPersist.current = true;
+    clearAssessmentDraft();
+    const result = buildAssessmentResult(nextAnswers);
+    saveResult(result);
+    void pushUserDataToServer({ result });
+    router.push("/results");
   }
 
   function selectAnswer(value: number) {
@@ -76,28 +108,49 @@ export default function DiagnosisPage() {
 
     if (questionIndex < totalQuestions - 1) {
       shouldResetScroll.current = true;
-      window.setTimeout(() => setQuestionIndex((index) => index + 1), 180);
+      const nextIndex = questionIndex + 1;
+      window.setTimeout(() => {
+        setQuestionIndex(nextIndex);
+        setMaxVisitedIndex((index) => Math.max(index, nextIndex));
+      }, 180);
       return;
     }
 
-    const result = buildAssessmentResult(nextAnswers);
-    saveResult(result);
-    void pushUserDataToServer({ result });
-    router.push("/results");
+    completeAssessment(nextAnswers);
   }
+
+  function goToNext() {
+    const question = assessmentQuestions[questionIndex];
+    if (questionIndex === totalQuestions - 1 && answers[question.id] !== undefined) {
+      completeAssessment(answers);
+      return;
+    }
+    if (questionIndex >= maxVisitedIndex) return;
+    shouldResetScroll.current = true;
+    setQuestionIndex((index) => index + 1);
+  }
+
+  const isLastQuestion = questionIndex === totalQuestions - 1;
+  const hasCurrentAnswer = answers[currentQuestion.id] !== undefined;
+  const showNext =
+    wentBack &&
+    (questionIndex < maxVisitedIndex || (isLastQuestion && hasCurrentAnswer && maxVisitedIndex === totalQuestions - 1));
 
   function goToPrevious() {
     if (questionIndex === 0) return;
     shouldResetScroll.current = true;
+    setWentBack(true);
     setQuestionIndex((index) => index - 1);
   }
 
   function resetAssessment() {
+    clearAssessmentDraft();
+    skipDraftPersist.current = false;
     setAnswers({});
     setQuestionIndex(0);
+    setMaxVisitedIndex(0);
+    setWentBack(false);
     setPhase("intro");
-    window.localStorage.removeItem(storageKeys.draftAnswers);
-    window.localStorage.removeItem(storageKeys.draftQuestionIndex);
   }
 
   if (phase === "intro") {
@@ -162,7 +215,7 @@ export default function DiagnosisPage() {
                 name={currentQuestion.id}
                 value={scale.value}
                 checked={answers[currentQuestion.id] === scale.value}
-                onChange={() => selectAnswer(scale.value)}
+                onClick={() => selectAnswer(scale.value)}
               />
               <span className="scale-number">{scale.value}</span>
               <strong>{scale.label}</strong>
@@ -172,12 +225,19 @@ export default function DiagnosisPage() {
       </article>
 
       <div className="diagnosis-nav">
-        <button className="text-button" type="button" disabled={questionIndex === 0} onClick={goToPrevious}>
-          &lt; 이전
-        </button>
-        <button className="text-button" type="button" onClick={resetAssessment}>
+        <button className="text-button nav-start" type="button" onClick={resetAssessment}>
           처음으로
         </button>
+        <button className="text-button nav-center" type="button" disabled={questionIndex === 0} onClick={goToPrevious}>
+          &lt; 이전
+        </button>
+        {showNext ? (
+          <button className="text-button nav-end" type="button" onClick={goToNext}>
+            다음 &gt;
+          </button>
+        ) : (
+          <span className="nav-end" aria-hidden="true" />
+        )}
       </div>
     </section>
   );

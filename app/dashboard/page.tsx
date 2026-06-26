@@ -5,7 +5,7 @@ import { useCallback, useState } from "react";
 import { GrowthLineChart, RadarScoreChart } from "@/components/ScoreCharts";
 import { ResultHighlights } from "@/components/ResultHighlights";
 import { ResultSharePanel } from "@/components/ResultSharePanel";
-import { formatScore, getHistory, getLatestResult, type AssessmentResult } from "@/lib/scoring";
+import { formatScore, getHistory, getLatestResult, clearAssessmentDraft, type AssessmentResult } from "@/lib/scoring";
 import { useUserDataRefresh } from "@/lib/use-user-data-refresh";
 
 export default function DashboardPage() {
@@ -75,7 +75,7 @@ export default function DashboardPage() {
               <p className="muted">2회 이상 진단하면 변화량이 표시됩니다.</p>
             )}
             <div className="cta-row">
-              <Link className="button" href="/diagnosis">
+              <Link className="button" href="/diagnosis" onClick={() => clearAssessmentDraft()}>
                 다시 진단하기
               </Link>
               <Link className="button secondary" href="/compare">

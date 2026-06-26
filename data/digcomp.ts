@@ -113,7 +113,7 @@ export const digcompAreas: DigcompArea[] = [
         shortTitle: "디지털 소통",
         description: "상황에 맞는 채널과 표현 방식으로 소통합니다.",
         prompts: [
-          "이메일, 메신저, 화상회의, 협업툴 중 목적에 맞는 소통 채널을 선택할 수 있다.",
+          "이메일, 메신저 등 다양한 채널로 업무 소통을 원활하게 할 수 있다.",
           "온라인 회의에서 안건, 기록, 후속 작업을 명확하게 공유할 수 있다.",
           "수신자와 맥락에 맞춰 메시지의 톤, 길이, 첨부 형식을 조정할 수 있다.",
         ],
@@ -146,7 +146,7 @@ export const digcompAreas: DigcompArea[] = [
         shortTitle: "협업",
         description: "공동 편집, 프로젝트 관리, 의사결정 도구를 활용합니다.",
         prompts: [
-          "공동 문서와 칸반 보드를 사용해 역할, 일정, 진행 상태를 투명하게 관리할 수 있다.",
+          "구글 독스, 노션 등 협업 도구로 팀원과 함께 작업할 수 있다.",
           "비동기 협업 상황에서 변경 사항과 결정 배경을 기록할 수 있다.",
           "반복 업무를 템플릿이나 자동화로 줄이는 협업 방식을 제안할 수 있다.",
         ],
@@ -210,7 +210,7 @@ export const digcompAreas: DigcompArea[] = [
         shortTitle: "저작권",
         description: "저작권, 초상권, 라이선스 조건을 준수합니다.",
         prompts: [
-          "이미지, 음악, 폰트, 데이터의 라이선스 조건을 확인하고 출처를 표기할 수 있다.",
+          "자료 공유 시 저작권 여부를 확인하고 지킬 수 있다.",
           "후원자나 활동가의 사진·사례를 사용할 때 동의 범위를 확인할 수 있다.",
           "오픈 라이선스 자료를 조직 콘텐츠에 적절히 활용할 수 있다.",
         ],
@@ -352,8 +352,23 @@ export type AssessmentQuestion = {
 
 const questionsPerArea = 3;
 
+const assessmentCompetencyIds: Partial<Record<DigcompAreaId, string[]>> = {
+  "communication-collaboration": ["interact", "collaborate", "citizenship"],
+};
+
+function getAssessmentCompetencies(area: DigcompArea) {
+  const selectedIds = assessmentCompetencyIds[area.id];
+  if (selectedIds) {
+    return selectedIds
+      .map((id) => area.competencies.find((competency) => competency.id === id))
+      .filter((competency): competency is Competency => Boolean(competency));
+  }
+
+  return area.competencies.slice(0, questionsPerArea);
+}
+
 export const assessmentQuestions: AssessmentQuestion[] = digcompAreas.flatMap((area) =>
-  area.competencies.slice(0, questionsPerArea).map((competency) => ({
+  getAssessmentCompetencies(area).map((competency) => ({
     id: `${competency.id}:0`,
     competencyId: competency.id,
     promptIndex: 0,

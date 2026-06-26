@@ -949,10 +949,27 @@ main {
 }
 
 .diagnosis-nav {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   margin-top: 1.5rem;
+}
+
+.nav-start {
+  justify-self: start;
+}
+
+.nav-center {
+  justify-self: center;
+}
+
+.nav-end {
+  justify-self: end;
+}
+
+.text-button:disabled {
+  color: var(--line);
+  cursor: not-allowed;
 }
 
 .diagnosis-actions {

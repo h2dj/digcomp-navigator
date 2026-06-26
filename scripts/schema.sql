@@ -18,3 +18,17 @@ CREATE TABLE IF NOT EXISTS assessment_results (
 );
 
 CREATE INDEX IF NOT EXISTS assessment_results_user_id_idx ON assessment_results (user_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS admin_accounts (
+  id TEXT PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  admin_group TEXT NOT NULL DEFAULT 'admin',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS assessment_config (
+  id TEXT PRIMARY KEY,
+  config JSONB NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

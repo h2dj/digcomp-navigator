@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { assessmentQuestions, responseScale } from "@/data/digcomp";
+import { getDefaultAssessmentConfig, type AssessmentConfig } from "@/lib/assessment-defaults";
 import { buildAssessmentResult, clearAssessmentDraft, saveResult, storageKeys, type AnswerMap } from "@/lib/scoring";
 import { pushUserDataToServer } from "@/lib/user-sync";
 
@@ -24,12 +24,26 @@ export default function DiagnosisPage() {
   const [maxVisitedIndex, setMaxVisitedIndex] = useState(0);
   const [wentBack, setWentBack] = useState(false);
   const [answers, setAnswers] = useState<AnswerMap>({});
+  const [assessmentConfig, setAssessmentConfig] = useState<AssessmentConfig>(() => getDefaultAssessmentConfig());
   const shouldResetScroll = useRef(false);
   const skipDraftPersist = useRef(false);
+  const assessmentQuestions = assessmentConfig.questions;
+  const responseScale = assessmentConfig.responseScale;
   const totalQuestions = assessmentQuestions.length;
   const currentQuestion = assessmentQuestions[questionIndex];
   const answeredCount = assessmentQuestions.filter((question) => answers[question.id] !== undefined).length;
-  const progress = Math.round((answeredCount / totalQuestions) * 100);
+  const progress = totalQuestions > 0 ? Math.round((answeredCount / totalQuestions) * 100) : 0;
+
+  useEffect(() => {
+    void fetch("/api/assessment-config")
+      .then((response) => response.json())
+      .then((data: AssessmentConfig) => {
+        if (Array.isArray(data.questions) && Array.isArray(data.responseScale)) {
+          setAssessmentConfig(data);
+        }
+      })
+      .catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     const rawAnswers = window.localStorage.getItem(storageKeys.draftAnswers);
@@ -160,7 +174,7 @@ export default function DiagnosisPage() {
           ✓
         </div>
         <h1>디지털 역량 진단</h1>
-        <p className="intro-lead">총 15개의 간단한 질문으로 구성되어 있어요.</p>
+        <p className="intro-lead">총 {totalQuestions}개의 간단한 질문으로 구성되어 있어요.</p>
         <p className="intro-copy">
           <strong>정답은 없어요.</strong> 지금 내 상황을 솔직하게 체크하면 됩니다. 약 5분 정도 걸려요.
         </p>
@@ -171,7 +185,7 @@ export default function DiagnosisPage() {
             <span>DigComp 3.0 기반</span>
           </article>
           <article className="intro-stat-card">
-            <strong>15개 질문</strong>
+            <strong>{totalQuestions}개 질문</strong>
             <span>영역당 3문항</span>
           </article>
           <article className="intro-stat-card">
@@ -185,6 +199,10 @@ export default function DiagnosisPage() {
         </button>
       </section>
     );
+  }
+
+  if (!currentQuestion) {
+    return <p className="muted">진단 문항을 불러오는 중...</p>;
   }
 
   return (

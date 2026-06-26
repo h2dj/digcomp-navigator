@@ -1,4 +1,5 @@
 import { neon } from "@neondatabase/serverless";
+import { ensureBootstrapAdmin } from "@/lib/admin-store";
 
 export function isDatabaseConfigured(): boolean {
   return Boolean(process.env.DATABASE_URL);
@@ -40,6 +41,23 @@ export async function ensureSchema(): Promise<void> {
   await sql`
     CREATE INDEX IF NOT EXISTS assessment_results_user_id_idx ON assessment_results (user_id, created_at DESC)
   `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS admin_accounts (
+      id TEXT PRIMARY KEY,
+      email TEXT NOT NULL UNIQUE,
+      password_hash TEXT NOT NULL,
+      admin_group TEXT NOT NULL DEFAULT 'admin',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS assessment_config (
+      id TEXT PRIMARY KEY,
+      config JSONB NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `;
 
   schemaReady = true;
+  await ensureBootstrapAdmin();
 }

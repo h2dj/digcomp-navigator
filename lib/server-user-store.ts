@@ -127,3 +127,77 @@ export async function syncUserData(
     }
   }
 }
+
+export type UserSummary = {
+  userId: string;
+  email: string | null;
+  profile: Profile;
+  resultCount: number;
+  latestResultAt: string | null;
+  updatedAt: string;
+};
+
+export async function listUsers(limit = 100, offset = 0): Promise<UserSummary[]> {
+  if (!isDatabaseConfigured()) return [];
+
+  await ensureSchema();
+  const sql = getSql();
+  if (!sql) return [];
+
+  const rows = await sql`
+    SELECT
+      u.id,
+      u.email,
+      u.profile,
+      u.updated_at,
+      COUNT(r.id)::int AS result_count,
+      MAX(r.created_at) AS latest_result_at
+    FROM users u
+    LEFT JOIN assessment_results r ON r.user_id = u.id
+    GROUP BY u.id, u.email, u.profile, u.updated_at
+    ORDER BY u.updated_at DESC
+    LIMIT ${limit}
+    OFFSET ${offset}
+  `;
+
+  return rows.map((row) => ({
+    userId: row.id as string,
+    email: (row.email as string | null) ?? null,
+    profile: row.profile as Profile,
+    resultCount: Number(row.result_count ?? 0),
+    latestResultAt: row.latest_result_at ? new Date(row.latest_result_at as string).toISOString() : null,
+    updatedAt: new Date(row.updated_at as string).toISOString(),
+  }));
+}
+
+export async function deleteUser(userId: string): Promise<boolean> {
+  if (!isDatabaseConfigured()) return false;
+
+  await ensureSchema();
+  const sql = getSql();
+  if (!sql) return false;
+
+  const rows = await sql`
+    DELETE FROM users
+    WHERE id = ${userId}
+    RETURNING id
+  `;
+
+  return rows.length > 0;
+}
+
+export async function deleteAssessmentResult(resultId: string): Promise<boolean> {
+  if (!isDatabaseConfigured()) return false;
+
+  await ensureSchema();
+  const sql = getSql();
+  if (!sql) return false;
+
+  const rows = await sql`
+    DELETE FROM assessment_results
+    WHERE id = ${resultId}
+    RETURNING id
+  `;
+
+  return rows.length > 0;
+}

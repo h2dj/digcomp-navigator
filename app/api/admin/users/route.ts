@@ -11,7 +11,9 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const limit = Math.min(Number.parseInt(searchParams.get("limit") ?? "100", 10) || 100, 200);
     const offset = Math.max(Number.parseInt(searchParams.get("offset") ?? "0", 10) || 0, 0);
-    const users = await listUsers(limit, offset);
+    const role = searchParams.get("role")?.trim() || undefined;
+    const organizationType = searchParams.get("organizationType")?.trim() || undefined;
+    const users = await listUsers(limit, offset, { role, organizationType });
     return NextResponse.json({ users });
   } catch {
     return NextResponse.json({ error: "이용자 목록을 불러오지 못했습니다." }, { status: 500 });

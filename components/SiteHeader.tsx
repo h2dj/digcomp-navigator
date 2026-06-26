@@ -6,7 +6,7 @@ import { brandLogoUrl } from "@/lib/brand";
 
 const navigation = [
   { href: "/digcomp", label: "DigComp 소개" },
-  { href: "/diagnosis", label: "진단하기" },
+  { href: "/diagnosis", label: "기본 진단" },
   { href: "/stats", label: "공개 통계" },
   { href: "/dashboard", label: "나의 대시보드" },
   { href: "/guide", label: "개발 가이드" },

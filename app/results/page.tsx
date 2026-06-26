@@ -5,7 +5,7 @@ import { useCallback, useState } from "react";
 import { AreaComparisonChart, RadarScoreChart } from "@/components/ScoreCharts";
 import { ResultHighlights } from "@/components/ResultHighlights";
 import { ResultSharePanel } from "@/components/ResultSharePanel";
-import { getLatestResult, formatScore, clearAssessmentDraft, type AssessmentResult } from "@/lib/scoring";
+import { getLatestResult, formatScore, clearAssessmentDraft, getAssessmentType, type AssessmentResult } from "@/lib/scoring";
 import { useUserDataRefresh } from "@/lib/use-user-data-refresh";
 
 export default function ResultsPage() {
@@ -38,21 +38,25 @@ export default function ResultsPage() {
     );
   }
 
+  const assessmentType = getAssessmentType(result);
+  const isDeep = assessmentType === "deep";
+
   return (
     <>
       <section className="page-title">
         <span className="eyebrow">Result</span>
-        <h1>나의 디지털 역량 결과</h1>
+        <h1>{isDeep ? `${result.deepLevel} 심층 진단 결과` : "기본 진단 결과"}</h1>
         <p>
-          5점 척도 응답을 DigComp 숙련도 0~4점으로 환산했습니다. 결과는 브라우저에 저장되며, 아래에서
-          파일 저장·이메일·SNS 공유도 할 수 있습니다.
+          {isDeep
+            ? "21개 역량 전체에 대한 심층 진단 결과입니다."
+            : "5점 척도 응답을 DigComp 숙련도 0~4점으로 환산했습니다. 대시보드에서 심층 진단 안내를 확인할 수 있어요."}
         </p>
       </section>
 
       <section className="section compact">
         <div className="score-hero">
           <article className="card">
-            <span className="eyebrow">종합 점수</span>
+            <span className="eyebrow">{isDeep ? "심층 진단" : "기본 진단"}</span>
             <div className="score-number">
               {formatScore(result.overallScore)}
               <small>/4.0</small>
@@ -65,9 +69,15 @@ export default function ResultsPage() {
               <Link className="button" href="/dashboard">
                 대시보드로 이동
               </Link>
-              <Link className="button secondary" href="/diagnosis" onClick={() => clearAssessmentDraft()}>
-                다시 진단하기
-              </Link>
+              {isDeep ? (
+                <Link className="button secondary" href="/diagnosis" onClick={() => clearAssessmentDraft()}>
+                  기본 진단 다시하기
+                </Link>
+              ) : (
+                <Link className="button secondary" href="/dashboard">
+                  심층 진단 안내 보기
+                </Link>
+              )}
             </div>
           </article>
           <RadarScoreChart result={result} />

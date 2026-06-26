@@ -17,9 +17,15 @@ export type CompetencyScore = {
   score: number;
 };
 
+export type ProficiencyLevel = "기초" | "중급" | "고급" | "전문가";
+
+export type AssessmentType = "basic" | "deep";
+
 export type AssessmentResult = {
   id: string;
   createdAt: string;
+  assessmentType?: AssessmentType;
+  deepLevel?: ProficiencyLevel;
   areaScores: AreaScore[];
   competencyScores: CompetencyScore[];
   overallScore: number;
@@ -35,8 +41,6 @@ export type Profile = {
   emailOptIn: boolean;
   email?: string;
 };
-
-export type ProficiencyLevel = "기초" | "중급" | "고급" | "전문가";
 
 export const defaultProfile: Profile = {
   role: "실무 직원",
@@ -109,7 +113,10 @@ export function formatScore(score: number): string {
   return score.toFixed(1);
 }
 
-export function buildAssessmentResult(answers: AnswerMap): AssessmentResult {
+export function buildAssessmentResult(
+  answers: AnswerMap,
+  options: { assessmentType?: AssessmentType; deepLevel?: ProficiencyLevel } = {},
+): AssessmentResult {
   const directScores = new Map<string, number>();
 
   for (const competency of allCompetencies) {
@@ -167,6 +174,8 @@ export function buildAssessmentResult(answers: AnswerMap): AssessmentResult {
   return {
     id: crypto.randomUUID(),
     createdAt: new Date().toISOString(),
+    assessmentType: options.assessmentType ?? "basic",
+    deepLevel: options.deepLevel,
     areaScores,
     competencyScores,
     overallScore,
@@ -192,6 +201,37 @@ export function clearAssessmentDraft(): void {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(storageKeys.draftAnswers);
   window.localStorage.removeItem(storageKeys.draftQuestionIndex);
+}
+
+export function getDeepDraftKeys(level: ProficiencyLevel) {
+  return {
+    answers: `digcomp-navigator:draft-deep-${level}-answers`,
+    questionIndex: `digcomp-navigator:draft-deep-${level}-index`,
+  };
+}
+
+export function clearDeepAssessmentDraft(level: ProficiencyLevel): void {
+  if (typeof window === "undefined") return;
+  const keys = getDeepDraftKeys(level);
+  window.localStorage.removeItem(keys.answers);
+  window.localStorage.removeItem(keys.questionIndex);
+}
+
+export function getAssessmentType(result: AssessmentResult): AssessmentType {
+  return result.assessmentType ?? "basic";
+}
+
+export function getLatestBasicResult(): AssessmentResult | null {
+  return getHistory().find((result) => getAssessmentType(result) === "basic") ?? null;
+}
+
+export function getLatestDeepResult(level?: ProficiencyLevel): AssessmentResult | null {
+  return (
+    getHistory().find(
+      (result) =>
+        getAssessmentType(result) === "deep" && (!level || result.deepLevel === level),
+    ) ?? null
+  );
 }
 
 export function saveResult(result: AssessmentResult): void {

@@ -137,12 +137,24 @@ export type UserSummary = {
   updatedAt: string;
 };
 
-export async function listUsers(limit = 100, offset = 0): Promise<UserSummary[]> {
+export type ListUsersFilters = {
+  role?: string;
+  organizationType?: string;
+};
+
+export async function listUsers(
+  limit = 100,
+  offset = 0,
+  filters: ListUsersFilters = {},
+): Promise<UserSummary[]> {
   if (!isDatabaseConfigured()) return [];
 
   await ensureSchema();
   const sql = getSql();
   if (!sql) return [];
+
+  const roleFilter = filters.role?.trim() || null;
+  const organizationTypeFilter = filters.organizationType?.trim() || null;
 
   const rows = await sql`
     SELECT
@@ -154,6 +166,8 @@ export async function listUsers(limit = 100, offset = 0): Promise<UserSummary[]>
       MAX(r.created_at) AS latest_result_at
     FROM users u
     LEFT JOIN assessment_results r ON r.user_id = u.id
+    WHERE (${roleFilter}::text IS NULL OR u.profile->>'role' = ${roleFilter})
+      AND (${organizationTypeFilter}::text IS NULL OR u.profile->>'organizationType' = ${organizationTypeFilter})
     GROUP BY u.id, u.email, u.profile, u.updated_at
     ORDER BY u.updated_at DESC
     LIMIT ${limit}

@@ -3,9 +3,17 @@
 import Link from "next/link";
 import { useCallback, useState } from "react";
 import { GrowthLineChart, RadarScoreChart } from "@/components/ScoreCharts";
+import { DeepAssessmentGuide } from "@/components/DeepAssessmentGuide";
 import { ResultHighlights } from "@/components/ResultHighlights";
 import { ResultSharePanel } from "@/components/ResultSharePanel";
-import { formatScore, getHistory, getLatestResult, clearAssessmentDraft, type AssessmentResult } from "@/lib/scoring";
+import {
+  formatScore,
+  getHistory,
+  getLatestBasicResult,
+  getLatestResult,
+  clearAssessmentDraft,
+  type AssessmentResult,
+} from "@/lib/scoring";
 import { useUserDataRefresh } from "@/lib/use-user-data-refresh";
 
 export default function DashboardPage() {
@@ -13,7 +21,7 @@ export default function DashboardPage() {
   const [history, setHistory] = useState<AssessmentResult[]>([]);
 
   useUserDataRefresh(useCallback(() => {
-    setLatest(getLatestResult());
+    setLatest(getLatestBasicResult() ?? getLatestResult());
     setHistory(getHistory());
   }, []));
 
@@ -33,7 +41,7 @@ export default function DashboardPage() {
             진단을 완료하면 나의 역량 프로필과 맞춤 학습 가이드를 확인할 수 있어요.
           </p>
           <Link className="button" href="/diagnosis">
-            진단하러 가기 &gt;
+            기본 진단하러 가기 &gt;
           </Link>
         </div>
       </>
@@ -48,13 +56,13 @@ export default function DashboardPage() {
       <section className="page-title">
         <span className="eyebrow">Dashboard</span>
         <h1>나의 대시보드</h1>
-        <p>최근 진단 결과, 강점·약점, 재진단에 따른 변화 추이를 확인합니다.</p>
+        <p>기본 진단 결과, 심층 진단 안내, 재진단에 따른 변화 추이를 확인합니다.</p>
       </section>
 
       <section className="section compact">
         <div className="score-hero">
           <article className="card">
-            <span className="eyebrow">최근 결과</span>
+            <span className="eyebrow">기본 진단 결과</span>
             <div className="score-number">
               {formatScore(latest.overallScore)}
               <small>/4.0</small>
@@ -76,7 +84,7 @@ export default function DashboardPage() {
             )}
             <div className="cta-row">
               <Link className="button" href="/diagnosis" onClick={() => clearAssessmentDraft()}>
-                다시 진단하기
+                기본 진단 다시하기
               </Link>
               <Link className="button secondary" href="/compare">
                 비교 분석 보기
@@ -86,6 +94,8 @@ export default function DashboardPage() {
           <RadarScoreChart result={latest} />
         </div>
       </section>
+
+      <DeepAssessmentGuide />
 
       <section className="section compact">
         <ResultSharePanel result={latest} />

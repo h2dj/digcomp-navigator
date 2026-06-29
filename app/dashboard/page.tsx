@@ -4,10 +4,14 @@ import Link from "next/link";
 import { useCallback, useState } from "react";
 import { GrowthLineChart, RadarScoreChart } from "@/components/ScoreCharts";
 import { DeepAssessmentGuide } from "@/components/DeepAssessmentGuide";
+import { DeepAssessmentResults } from "@/components/DeepAssessmentResults";
 import { ResultHighlights } from "@/components/ResultHighlights";
 import { ResultSharePanel } from "@/components/ResultSharePanel";
 import {
   formatScore,
+  getAssessmentType,
+  getBasicResults,
+  getDeepResults,
   getHistory,
   getLatestBasicResult,
   getLatestResult,
@@ -17,15 +21,19 @@ import {
 import { useUserDataRefresh } from "@/lib/use-user-data-refresh";
 
 export default function DashboardPage() {
-  const [latest, setLatest] = useState<AssessmentResult | null>(null);
-  const [history, setHistory] = useState<AssessmentResult[]>([]);
+  const [basicResult, setBasicResult] = useState<AssessmentResult | null>(null);
+  const [deepResults, setDeepResults] = useState<AssessmentResult[]>([]);
+  const [basicHistory, setBasicHistory] = useState<AssessmentResult[]>([]);
 
-  useUserDataRefresh(useCallback(() => {
-    setLatest(getLatestBasicResult() ?? getLatestResult());
-    setHistory(getHistory());
-  }, []));
+  useUserDataRefresh(
+    useCallback(() => {
+      setBasicResult(getLatestBasicResult() ?? getLatestResult());
+      setDeepResults(getDeepResults());
+      setBasicHistory(getBasicResults());
+    }, []),
+  );
 
-  if (!latest) {
+  if (!basicResult) {
     return (
       <>
         <section className="page-title">
@@ -48,15 +56,18 @@ export default function DashboardPage() {
     );
   }
 
-  const previous = history[1];
-  const delta = previous ? latest.overallScore - previous.overallScore : null;
+  const previousBasic = basicHistory[1];
+  const delta =
+    previousBasic && getAssessmentType(basicResult) === "basic"
+      ? basicResult.overallScore - previousBasic.overallScore
+      : null;
 
   return (
     <>
       <section className="page-title">
         <span className="eyebrow">Dashboard</span>
         <h1>나의 대시보드</h1>
-        <p>기본 진단 결과, 심층 진단 안내, 재진단에 따른 변화 추이를 확인합니다.</p>
+        <p>기본·심층 진단 결과와 재진단에 따른 변화 추이를 확인합니다.</p>
       </section>
 
       <section className="section compact">
@@ -64,15 +75,15 @@ export default function DashboardPage() {
           <article className="card">
             <span className="eyebrow">기본 진단 결과</span>
             <div className="score-number">
-              {formatScore(latest.overallScore)}
+              {formatScore(basicResult.overallScore)}
               <small>/4.0</small>
             </div>
             <p>
-              숙련도 <span className="level-badge">{latest.level}</span>
+              숙련도 <span className="level-badge">{basicResult.level}</span>
             </p>
             {delta !== null ? (
               <p>
-                직전 회차 대비{" "}
+                직전 기본 진단 대비{" "}
                 <strong className={delta >= 0 ? "delta-up" : "delta-down"}>
                   {delta >= 0 ? "+" : ""}
                   {delta.toFixed(1)}
@@ -80,7 +91,7 @@ export default function DashboardPage() {
                 </strong>
               </p>
             ) : (
-              <p className="muted">2회 이상 진단하면 변화량이 표시됩니다.</p>
+              <p className="muted">기본 진단을 2회 이상 하면 변화량이 표시됩니다.</p>
             )}
             <div className="cta-row">
               <Link className="button" href="/diagnosis" onClick={() => clearAssessmentDraft()}>
@@ -91,30 +102,32 @@ export default function DashboardPage() {
               </Link>
             </div>
           </article>
-          <RadarScoreChart result={latest} />
+          <RadarScoreChart result={basicResult} />
         </div>
       </section>
+
+      <DeepAssessmentResults results={deepResults} />
 
       <DeepAssessmentGuide />
 
       <section className="section compact">
-        <ResultSharePanel result={latest} />
+        <ResultSharePanel result={basicResult} />
       </section>
 
       <section className="section compact">
-        {history.length >= 2 ? (
+        {basicHistory.length >= 2 ? (
           <>
             <span className="eyebrow">Growth</span>
-            <h2>역량 변화 추이</h2>
-            <GrowthLineChart history={history} />
+            <h2>기본 진단 변화 추이</h2>
+            <GrowthLineChart history={basicHistory} />
           </>
         ) : (
-          <div className="notice">최소 2회 이상 진단하면 꺾은선 차트로 영역별 변화를 확인할 수 있습니다.</div>
+          <div className="notice">기본 진단을 2회 이상 하면 꺾은선 차트로 영역별 변화를 확인할 수 있습니다.</div>
         )}
       </section>
 
       <section className="section compact">
-        <ResultHighlights result={latest} />
+        <ResultHighlights result={basicResult} />
       </section>
     </>
   );

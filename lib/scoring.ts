@@ -234,6 +234,14 @@ export function getLatestDeepResult(level?: ProficiencyLevel): AssessmentResult 
   );
 }
 
+export function getDeepResults(): AssessmentResult[] {
+  return getHistory().filter((result) => getAssessmentType(result) === "deep");
+}
+
+export function getBasicResults(): AssessmentResult[] {
+  return getHistory().filter((result) => getAssessmentType(result) === "basic");
+}
+
 export function saveResult(result: AssessmentResult): void {
   if (typeof window === "undefined") return;
   const history = getHistory();

@@ -1,12 +1,19 @@
 import { ensureSchema, getSql, isDatabaseConfigured } from "@/lib/db";
 import {
   getDefaultAssessmentConfig,
+  getDefaultDeepAssessmentConfig,
   type AssessmentConfig,
   type AssessmentQuestionConfig,
   type ResponseScaleItem,
 } from "@/lib/assessment-defaults";
+import type { ProficiencyLevel } from "@/lib/scoring";
+import { isProficiencyLevel } from "@/data/deep-assessment";
 
-const CONFIG_ID = "default";
+const BASIC_CONFIG_ID = "default";
+
+function getDeepConfigId(level: ProficiencyLevel): string {
+  return `deep-${level}`;
+}
 
 function normalizeResponseScale(scale: ResponseScaleItem[]): ResponseScaleItem[] {
   return scale
@@ -33,8 +40,7 @@ function normalizeQuestions(questions: AssessmentQuestionConfig[]): AssessmentQu
     .filter((question) => question.id && question.prompt);
 }
 
-export function validateAssessmentConfig(input: AssessmentConfig): AssessmentConfig {
-  const defaults = getDefaultAssessmentConfig();
+function validateAgainstDefaults(input: AssessmentConfig, defaults: AssessmentConfig): AssessmentConfig {
   const responseScale = normalizeResponseScale(input.responseScale);
   const questions = normalizeQuestions(input.questions);
 
@@ -60,8 +66,15 @@ export function validateAssessmentConfig(input: AssessmentConfig): AssessmentCon
   };
 }
 
-export async function getAssessmentConfig(): Promise<AssessmentConfig> {
-  const defaults = getDefaultAssessmentConfig();
+export function validateAssessmentConfig(input: AssessmentConfig): AssessmentConfig {
+  return validateAgainstDefaults(input, getDefaultAssessmentConfig());
+}
+
+export function validateDeepAssessmentConfig(level: ProficiencyLevel, input: AssessmentConfig): AssessmentConfig {
+  return validateAgainstDefaults(input, getDefaultDeepAssessmentConfig(level));
+}
+
+async function loadConfigById(configId: string, defaults: AssessmentConfig): Promise<AssessmentConfig> {
   if (!isDatabaseConfigured()) return defaults;
 
   await ensureSchema();
@@ -71,7 +84,7 @@ export async function getAssessmentConfig(): Promise<AssessmentConfig> {
   const rows = await sql`
     SELECT config, updated_at
     FROM assessment_config
-    WHERE id = ${CONFIG_ID}
+    WHERE id = ${configId}
     LIMIT 1
   `;
 
@@ -87,12 +100,10 @@ export async function getAssessmentConfig(): Promise<AssessmentConfig> {
   };
 }
 
-export async function saveAssessmentConfig(input: AssessmentConfig): Promise<AssessmentConfig> {
+async function saveConfigById(configId: string, config: AssessmentConfig): Promise<AssessmentConfig> {
   if (!isDatabaseConfigured()) {
     throw new Error("DATABASE_URL is not configured");
   }
-
-  const config = validateAssessmentConfig(input);
 
   await ensureSchema();
   const sql = getSql();
@@ -102,10 +113,35 @@ export async function saveAssessmentConfig(input: AssessmentConfig): Promise<Ass
 
   await sql`
     INSERT INTO assessment_config (id, config, updated_at)
-    VALUES (${CONFIG_ID}, ${config as unknown as Record<string, unknown>}, NOW())
+    VALUES (${configId}, ${config as unknown as Record<string, unknown>}, NOW())
     ON CONFLICT (id) DO UPDATE
     SET config = EXCLUDED.config, updated_at = NOW()
   `;
 
   return config;
+}
+
+export async function getAssessmentConfig(): Promise<AssessmentConfig> {
+  return loadConfigById(BASIC_CONFIG_ID, getDefaultAssessmentConfig());
+}
+
+export async function saveAssessmentConfig(input: AssessmentConfig): Promise<AssessmentConfig> {
+  const config = validateAssessmentConfig(input);
+  return saveConfigById(BASIC_CONFIG_ID, config);
+}
+
+export async function getDeepAssessmentConfig(level: ProficiencyLevel): Promise<AssessmentConfig> {
+  return loadConfigById(getDeepConfigId(level), getDefaultDeepAssessmentConfig(level));
+}
+
+export async function saveDeepAssessmentConfig(
+  level: ProficiencyLevel,
+  input: AssessmentConfig,
+): Promise<AssessmentConfig> {
+  const config = validateDeepAssessmentConfig(level, input);
+  return saveConfigById(getDeepConfigId(level), config);
+}
+
+export function parseDeepConfigLevel(value: string): ProficiencyLevel | null {
+  return isProficiencyLevel(value) ? value : null;
 }

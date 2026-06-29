@@ -1,4 +1,6 @@
 import { assessmentQuestions, responseScale } from "@/data/digcomp";
+import { getDeepAssessmentQuestions, proficiencyLevels } from "@/data/deep-assessment";
+import type { ProficiencyLevel } from "@/lib/scoring";
 
 export type ResponseScaleItem = {
   value: number;
@@ -28,3 +30,12 @@ export function getDefaultAssessmentConfig(): AssessmentConfig {
     questions: assessmentQuestions.map((question) => ({ ...question })),
   };
 }
+
+export function getDefaultDeepAssessmentConfig(level: ProficiencyLevel): AssessmentConfig {
+  return {
+    responseScale: responseScale.map((item) => ({ ...item })),
+    questions: getDeepAssessmentQuestions(level).map((question) => ({ ...question })),
+  };
+}
+
+export { proficiencyLevels };

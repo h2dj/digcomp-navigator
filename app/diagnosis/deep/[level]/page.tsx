@@ -1,11 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useCallback } from "react";
+import { useEffect, useMemo, useCallback, useState } from "react";
 import { notFound, useParams, useRouter } from "next/navigation";
-import { CONSULTING_URL, deepAssessmentMeta, getDeepAssessmentQuestions, isProficiencyLevel } from "@/data/deep-assessment";
-import { responseScale } from "@/data/digcomp";
+import {
+  CONSULTING_URL,
+  deepAssessmentMeta,
+  isProficiencyLevel,
+} from "@/data/deep-assessment";
 import { DiagnosisFlow } from "@/components/DiagnosisFlow";
+import { getDefaultDeepAssessmentConfig, type AssessmentConfig } from "@/lib/assessment-defaults";
 import {
   buildAssessmentResult,
   clearDeepAssessmentDraft,
@@ -29,9 +33,22 @@ export default function DeepDiagnosisPage() {
   const level = levelParam as ProficiencyLevel;
   const basicResult = getLatestBasicResult();
   const meta = deepAssessmentMeta[level];
-  const questions = useMemo(() => getDeepAssessmentQuestions(level), [level]);
   const draftKeys = getDeepDraftKeys(level);
   const onClearDraft = useCallback(() => clearDeepAssessmentDraft(level), [level]);
+  const [assessmentConfig, setAssessmentConfig] = useState<AssessmentConfig>(() =>
+    getDefaultDeepAssessmentConfig(level),
+  );
+
+  useEffect(() => {
+    void fetch(`/api/assessment-config/deep/${encodeURIComponent(level)}`)
+      .then((response) => response.json())
+      .then((data: AssessmentConfig) => {
+        if (Array.isArray(data.questions) && Array.isArray(data.responseScale)) {
+          setAssessmentConfig(data);
+        }
+      })
+      .catch(() => undefined);
+  }, [level]);
 
   const intro = useMemo(
     () => (
@@ -105,8 +122,8 @@ export default function DeepDiagnosisPage() {
       ) : null}
       <DiagnosisFlow
         intro={intro}
-        questions={questions}
-        responseScale={responseScale.map((item) => ({ ...item }))}
+        questions={assessmentConfig.questions}
+        responseScale={assessmentConfig.responseScale}
         draftAnswersKey={draftKeys.answers}
         draftIndexKey={draftKeys.questionIndex}
         onClearDraft={onClearDraft}

@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 const adminNavigation = [
   { href: "/admin", label: "이용자" },
   { href: "/admin/assessment", label: "진단 설정" },
+  { href: "/admin/guide", label: "개발 가이드" },
   { href: "/admin/accounts", label: "관리자 계정" },
 ];
 

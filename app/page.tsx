@@ -38,7 +38,7 @@ export default function HomePage() {
           </div>
           <div>
             <strong>3.0</strong>
-            <span>최신 버전 (2022)</span>
+            <span>최신 버전 (2025)</span>
           </div>
           <div>
             <strong>5개</strong>

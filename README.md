@@ -42,6 +42,7 @@ npm start
 | `DATABASE_URL` | 이용자·진단 결과 영구 저장 (Neon) |
 | `RESEND_API_KEY` / `EMAIL_FROM` | 결과 이메일 발송 |
 | `NEXT_PUBLIC_SITE_URL` | SNS 공유 링크 |
+| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | Google Analytics 4 이용자 분석 |
 
 DB 스키마는 `scripts/schema.sql`을 참고하세요. API 첫 호출 시 테이블이 자동 생성됩니다.
 

@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { defaultProfile, getProfile, saveProfile, type Profile } from "@/lib/scoring";
 import { pushUserDataToServer } from "@/lib/user-sync";
 
-const roleOptions = ["실무 직원", "중간 관리자", "교육 담당자", "임원/대표"];
-const organizationOptions = ["시민사회단체", "복지기관", "재단", "협동조합", "기타"];
+const roleOptions = ["실무 직원", "중간 관리자", "임원/대표", "회원(비상근)", "시민(무소속)"];
+const organizationOptions = ["시민사회단체", "복지기관", "재단", "협동조합", "기타/무소속"];
 const yearOptions = ["1년 미만", "1-3년", "4-7년", "8-10년", "10년 이상"];
 
 export default function ProfilePage() {
@@ -36,7 +36,7 @@ export default function ProfilePage() {
         <article className="card">
           <div className="form-grid">
             <div className="field form-grid-full">
-              <label htmlFor="email">이메일 (결과 복원용)</label>
+              <label htmlFor="email">이메일</label>
               <input
                 id="email"
                 type="email"

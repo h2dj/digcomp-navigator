@@ -93,6 +93,19 @@ export default function DashboardPage() {
         </div>
       </section>
 
+      <section className="section compact">
+        <article className="card">
+          <h2>프로필 입력으로 후속 변화 추적 정확도를 높이세요</h2>
+          <p className="muted">
+            직군, 조직 유형, 경력 정보를 입력하면 재진단 시 변화 추이를 더 정확하게 비교하고 공개 통계에도 반영할 수
+            있어요.
+          </p>
+          <Link className="button secondary" href="/profile">
+            프로필 입력하기 &gt;
+          </Link>
+        </article>
+      </section>
+
       {tab === "basic" ? (
         <div className="dashboard-tab-panel" role="tabpanel">
           <section className="section compact">

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DiagnosisFlow } from "@/components/DiagnosisFlow";
 import { getDefaultAssessmentConfig, type AssessmentConfig } from "@/lib/assessment-defaults";
+import { trackAssessmentComplete } from "@/lib/analytics";
 import {
   buildAssessmentResult,
   clearAssessmentDraft,
@@ -60,6 +61,7 @@ export default function BasicDiagnosisPage() {
 
   function handleComplete(answers: AnswerMap) {
     const result = buildAssessmentResult(answers, { assessmentType: "basic" });
+    trackAssessmentComplete("basic", { level: result.level, overallScore: result.overallScore });
     saveResult(result);
     void pushUserDataToServer({ result });
     router.push("/results");
@@ -75,6 +77,7 @@ export default function BasicDiagnosisPage() {
       onClearDraft={clearAssessmentDraft}
       onComplete={handleComplete}
       resumeKey="basic"
+      analytics={{ assessmentType: "basic" }}
     />
   );
 }

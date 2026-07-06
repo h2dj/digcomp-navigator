@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { trackProfileSave } from "@/lib/analytics";
+import { profileOrganizationOptions, profileRoleOptions } from "@/lib/profile-options";
 import { defaultProfile, getProfile, saveProfile, type Profile } from "@/lib/scoring";
 import { pushUserDataToServer } from "@/lib/user-sync";
 
-const roleOptions = ["실무 직원", "중간 관리자", "임원/대표", "회원(비상근)", "시민(무소속)"];
-const organizationOptions = ["시민사회단체", "복지기관", "재단", "협동조합", "기타/무소속"];
+const roleOptions = [...profileRoleOptions];
+const organizationOptions = [...profileOrganizationOptions];
 const yearOptions = ["1년 미만", "1-3년", "4-7년", "8-10년", "10년 이상"];
 
 export default function ProfilePage() {
@@ -93,6 +95,11 @@ export default function ProfilePage() {
               onClick={() => {
                 saveProfile(profile);
                 void pushUserDataToServer({ profile });
+                trackProfileSave({
+                  hasEmail: Boolean(profile.email?.trim()),
+                  role: profile.role,
+                  organizationType: profile.organizationType,
+                });
                 setSaved(true);
               }}
             >

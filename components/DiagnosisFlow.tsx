@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import type { AssessmentQuestionConfig, ResponseScaleItem } from "@/lib/assessment-defaults";
+import { trackAssessmentStart } from "@/lib/analytics";
 import type { AnswerMap } from "@/lib/scoring";
 
 type Phase = "intro" | "questions";
@@ -23,6 +24,10 @@ type DiagnosisFlowProps = {
   onClearDraft: () => void;
   onComplete: (answers: AnswerMap) => void;
   resumeKey?: string;
+  analytics?: {
+    assessmentType: "basic" | "deep";
+    deepLevel?: string;
+  };
 };
 
 export function DiagnosisFlow({
@@ -34,6 +39,7 @@ export function DiagnosisFlow({
   onClearDraft,
   onComplete,
   resumeKey = "default",
+  analytics,
 }: DiagnosisFlowProps) {
   const [phase, setPhase] = useState<Phase>("intro");
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -107,6 +113,10 @@ export function DiagnosisFlow({
     setQuestionIndex(0);
     setMaxVisitedIndex(0);
     setWentBack(false);
+
+    if (analytics) {
+      trackAssessmentStart(analytics.assessmentType, analytics.deepLevel);
+    }
   }
 
   function completeAssessment(nextAnswers: AnswerMap) {

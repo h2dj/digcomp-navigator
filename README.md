@@ -44,6 +44,14 @@ npm start
 | `NEXT_PUBLIC_SITE_URL` | SNS 공유 링크 |
 | `NEXT_PUBLIC_GA_MEASUREMENT_ID` | Google Analytics 4 이용자 분석 |
 
+GA4에서 확인할 수 있는 맞춤 이벤트:
+
+| 이벤트 | 발생 시점 | 주요 파라미터 |
+|--------|-----------|---------------|
+| `assessment_start` | 진단 시작하기 클릭 | `assessment_type`, `deep_level` |
+| `assessment_complete` | 진단 완료 | `assessment_type`, `proficiency_level`, `overall_score`, `deep_level` |
+| `profile_save` | 프로필 저장 | `has_email`, `role`, `organization_type` |
+
 DB 스키마는 `scripts/schema.sql`을 참고하세요. API 첫 호출 시 테이블이 자동 생성됩니다.
 
 ### 방법 A — Vercel (권장, 가장 빠름)
@@ -82,4 +90,4 @@ npm start
 - 진단 결과는 브라우저와 서버에 저장됩니다. **프로필에 이메일**을 입력하면 다른 기기에서도 불러올 수 있습니다.
 - `DATABASE_URL` 미설정 시 서버 저장은 되지 않고 브라우저에만 남습니다.
 - 시크릿/프라이빗 모드에서는 창을 닫으면 로컬 데이터가 사라질 수 있습니다.
-- 공개 통계(`/stats`)는 데모용 고정 수치입니다.
+- 공개 통계(`/stats`)는 데모용 고정 수치이며, **통합 통계**(항상 공개)와 **세그먼트별 통계**(10명 이상만 평균 공개)로 구분됩니다.

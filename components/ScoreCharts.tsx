@@ -17,12 +17,50 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import type { AssessmentResult, AreaScore } from "@/lib/scoring";
+import type { DigcompAreaId } from "@/data/digcomp";
 import { digcompAreas } from "@/data/digcomp";
+
+import type { AssessmentResult, AreaScore } from "@/lib/scoring";
 
 type ScoreChartsProps = {
   result: AssessmentResult;
 };
+
+export function AggregateRadarChart({
+  areaAverages,
+}: {
+  areaAverages: Record<DigcompAreaId, number | null>;
+}) {
+  const data = digcompAreas.map((area) => ({
+    area: compactAreaName(area.title),
+    전체평균: areaAverages[area.id] ?? 0,
+  }));
+
+  const hasData = digcompAreas.some((area) => areaAverages[area.id] != null);
+
+  if (!hasData) {
+    return (
+      <div className="chart-card chart-card-empty">
+        <p className="muted">진단 결과가 쌓이면 5개 영역 평균을 오각형 그래프로 보여드립니다.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="chart-card">
+      <ResponsiveContainer width="100%" height={360}>
+        <RadarChart data={data} outerRadius={120}>
+          <PolarGrid />
+          <PolarAngleAxis dataKey="area" tick={{ fill: "#3d5a4c", fontSize: 12 }} />
+          <PolarRadiusAxis domain={[0, 4]} tickCount={5} tick={{ fill: "#5c6b62", fontSize: 11 }} />
+          <Radar dataKey="전체평균" stroke="#4f6f5e" fill="#6b9b7a" fillOpacity={0.45} />
+          <Legend />
+          <Tooltip formatter={(value) => (typeof value === "number" ? value.toFixed(1) : String(value ?? ""))} />
+        </RadarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
 
 export function RadarScoreChart({ result }: ScoreChartsProps) {
   const data = result.areaScores.map((area) => ({

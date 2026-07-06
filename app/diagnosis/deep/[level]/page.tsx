@@ -10,6 +10,7 @@ import {
 } from "@/data/deep-assessment";
 import { DiagnosisFlow } from "@/components/DiagnosisFlow";
 import { getDefaultDeepAssessmentConfig, type AssessmentConfig } from "@/lib/assessment-defaults";
+import { trackAssessmentComplete } from "@/lib/analytics";
 import {
   buildAssessmentResult,
   clearDeepAssessmentDraft,
@@ -100,6 +101,11 @@ export default function DeepDiagnosisPage() {
 
   function handleComplete(answers: AnswerMap) {
     const result = buildAssessmentResult(answers, { assessmentType: "deep", deepLevel: level });
+    trackAssessmentComplete("deep", {
+      level: result.level,
+      overallScore: result.overallScore,
+      deepLevel: level,
+    });
     saveResult(result);
     void pushUserDataToServer({ result });
     router.push("/results");
@@ -129,6 +135,7 @@ export default function DeepDiagnosisPage() {
         onClearDraft={onClearDraft}
         onComplete={handleComplete}
         resumeKey={`deep-${level}`}
+        analytics={{ assessmentType: "deep", deepLevel: level }}
       />
     </>
   );

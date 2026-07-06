@@ -66,37 +66,6 @@ export const cohortAverages: Record<DigcompAreaId, number> = {
   "problem-solving": 2.16,
 };
 
-export const segmentAverages = {
-  role: {
-    "실무 직원": 2.18,
-    "중간 관리자": 2.42,
-    "교육 담당자": 2.55,
-    "임원/대표": 2.06,
-  },
-  organizationType: {
-    시민사회단체: 2.31,
-    복지기관: 2.04,
-    재단: 2.48,
-    협동조합: 2.22,
-    기타: 2.12,
-  },
-};
-
-export const publicStats = {
-  totalParticipants: 428,
-  completedAssessments: 516,
-  averageScore: 2.21,
-  medianScore: 2.18,
-  minimumSegmentSize: 10,
-  organizationDistribution: [
-    { name: "시민사회단체", value: 168 },
-    { name: "복지기관", value: 96 },
-    { name: "재단", value: 74 },
-    { name: "협동조합", value: 45 },
-    { name: "기타", value: 45 },
-  ],
-};
-
 export function getLevel(score: number): ProficiencyLevel {
   if (score >= 3.4) return "전문가";
   if (score >= 2.5) return "고급";

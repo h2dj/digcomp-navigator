@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { GoogleAnalytics } from "@/components/GoogleAnalytics";
+import { GoogleAnalyticsProvider } from "@/components/GoogleAnalyticsProvider";
 import { SiteShell } from "@/components/SiteShell";
 import "./globals.css";
 
@@ -22,7 +22,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         />
       </head>
       <body>
-        {gaMeasurementId ? <GoogleAnalytics measurementId={gaMeasurementId} /> : null}
+        {gaMeasurementId ? <GoogleAnalyticsProvider measurementId={gaMeasurementId} /> : null}
         <SiteShell>{children}</SiteShell>
       </body>
     </html>

@@ -16,6 +16,7 @@ export type AssessmentQuestionConfig = {
   areaTitle: string;
   categoryLabel: string;
   prompt: string;
+  outcomeType?: "knowledge" | "skill" | "attitude";
 };
 
 export type AssessmentConfig = {
@@ -38,4 +39,4 @@ export function getDefaultDeepAssessmentConfig(level: ProficiencyLevel): Assessm
   };
 }
 
-export { proficiencyLevels };
+export { proficiencyLevels } from "@/lib/scoring";

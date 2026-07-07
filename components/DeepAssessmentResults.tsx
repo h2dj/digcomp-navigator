@@ -17,7 +17,7 @@ export function DeepAssessmentResults({ results }: DeepAssessmentResultsProps) {
     <section className="section compact">
       <span className="eyebrow">Deep Assessment</span>
       <h2>심층 진단 결과</h2>
-      <p className="muted">21개 역량 전체를 점검한 심층 진단 결과입니다.</p>
+      <p className="muted">역량별 지식·기술·태도를 점검한 심층 진단 결과입니다.</p>
 
       <div className="deep-results-stack">
         {results.map((result) => (
@@ -36,7 +36,7 @@ export function DeepAssessmentResults({ results }: DeepAssessmentResultsProps) {
                 <div className="cta-row">
                   <Link
                     className="button secondary"
-                    href={`/diagnosis/deep/${encodeURIComponent(result.deepLevel ?? "기초")}`}
+                    href={`/diagnosis/deep/${encodeURIComponent(result.deepLevel ?? "초급")}`}
                   >
                     {result.deepLevel} 심층 진단 다시하기
                   </Link>

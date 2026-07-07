@@ -7,7 +7,7 @@ import {
   type ResponseScaleItem,
 } from "@/lib/assessment-defaults";
 import type { ProficiencyLevel } from "@/lib/scoring";
-import { isProficiencyLevel } from "@/data/deep-assessment";
+import { getLegacyProficiencyLevel, parseProficiencyLevel } from "@/lib/scoring";
 
 const BASIC_CONFIG_ID = "default";
 
@@ -36,6 +36,7 @@ function normalizeQuestions(questions: AssessmentQuestionConfig[]): AssessmentQu
       areaTitle: String(question.areaTitle).trim(),
       categoryLabel: String(question.categoryLabel).trim(),
       prompt: String(question.prompt).trim(),
+      outcomeType: question.outcomeType,
     }))
     .filter((question) => question.id && question.prompt);
 }
@@ -53,15 +54,22 @@ function validateAgainstDefaults(input: AssessmentConfig, defaults: AssessmentCo
   }
 
   const defaultIds = new Set(defaults.questions.map((question) => question.id));
+  const questionById = new Map(questions.map((question) => [question.id, question]));
+
   for (const question of questions) {
     if (!defaultIds.has(question.id)) {
       throw new Error(`알 수 없는 문항 ID입니다: ${question.id}`);
     }
   }
 
+  const mergedQuestions = defaults.questions.map((defaultQuestion) => {
+    const saved = questionById.get(defaultQuestion.id);
+    return saved ? { ...defaultQuestion, ...saved } : defaultQuestion;
+  });
+
   return {
     responseScale,
-    questions,
+    questions: mergedQuestions,
     updatedAt: new Date().toISOString(),
   };
 }
@@ -130,8 +138,72 @@ export async function saveAssessmentConfig(input: AssessmentConfig): Promise<Ass
   return saveConfigById(BASIC_CONFIG_ID, config);
 }
 
+function mapLegacyQuestionId(id: string): string {
+  for (const [legacy, current] of Object.entries({
+    기초: "초급",
+    고급: "상급",
+    전문가: "최상급",
+  })) {
+    if (id.includes(`:${legacy}:`)) {
+      return id.replace(`:${legacy}:`, `:${current}:`);
+    }
+  }
+  return id;
+}
+
+async function loadDeepConfigRecord(level: ProficiencyLevel, defaults: AssessmentConfig): Promise<AssessmentConfig> {
+  const primary = await loadConfigById(getDeepConfigId(level), defaults);
+  const legacyLevel = getLegacyProficiencyLevel(level);
+  if (!legacyLevel) {
+    return primary;
+  }
+
+  const legacy = await loadConfigById(`deep-${legacyLevel}`, defaults);
+  if (!primary.updatedAt && legacy.updatedAt) {
+    return legacy;
+  }
+  if (!legacy.updatedAt) {
+    return primary;
+  }
+
+  return new Date(primary.updatedAt ?? 0) >= new Date(legacy.updatedAt) ? primary : legacy;
+}
+
 export async function getDeepAssessmentConfig(level: ProficiencyLevel): Promise<AssessmentConfig> {
-  return loadConfigById(getDeepConfigId(level), getDefaultDeepAssessmentConfig(level));
+  const defaults = getDefaultDeepAssessmentConfig(level);
+  const loaded = await loadDeepConfigRecord(level, defaults);
+  const defaultIds = new Set(defaults.questions.map((question) => question.id));
+  const usesCurrentSchema =
+    loaded.questions.length === defaults.questions.length &&
+    loaded.questions.every((question) => defaultIds.has(mapLegacyQuestionId(question.id)));
+
+  if (usesCurrentSchema) {
+    return {
+      ...loaded,
+      questions: loaded.questions.map((question) => ({
+        ...question,
+        id: mapLegacyQuestionId(question.id),
+      })),
+    };
+  }
+
+  const savedPrompts = new Map(
+    loaded.questions.map((question) => [mapLegacyQuestionId(question.id), question]),
+  );
+
+  return {
+    responseScale: loaded.responseScale,
+    questions: defaults.questions.map((question) => {
+      const saved = savedPrompts.get(question.id);
+      if (!saved) return question;
+      return {
+        ...question,
+        prompt: saved.prompt,
+        categoryLabel: saved.categoryLabel,
+      };
+    }),
+    updatedAt: loaded.updatedAt,
+  };
 }
 
 export async function saveDeepAssessmentConfig(
@@ -143,5 +215,5 @@ export async function saveDeepAssessmentConfig(
 }
 
 export function parseDeepConfigLevel(value: string): ProficiencyLevel | null {
-  return isProficiencyLevel(value) ? value : null;
+  return parseProficiencyLevel(decodeURIComponent(value));
 }

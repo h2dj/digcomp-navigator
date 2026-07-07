@@ -1,7 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import type { AssessmentConfig } from "@/lib/assessment-defaults";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { digcompAreas } from "@/data/digcomp";
+import { outcomeTypeLabels } from "@/data/learning-outcomes";
+import type { AssessmentConfig, AssessmentQuestionConfig } from "@/lib/assessment-defaults";
 
 type AdminAssessmentEditorProps = {
   title: string;
@@ -9,7 +11,18 @@ type AdminAssessmentEditorProps = {
   loadUrl: string;
   saveUrl: string;
   resumeKey: string;
+  variant?: "basic" | "deep";
 };
+
+function groupQuestionsByArea(questions: AssessmentQuestionConfig[]) {
+  return digcompAreas
+    .map((area) => ({
+      areaId: area.id,
+      areaTitle: area.title,
+      questions: questions.filter((question) => question.areaId === area.id),
+    }))
+    .filter((group) => group.questions.length > 0);
+}
 
 export function AdminAssessmentEditor({
   title,
@@ -17,6 +30,7 @@ export function AdminAssessmentEditor({
   loadUrl,
   saveUrl,
   resumeKey,
+  variant = "basic",
 }: AdminAssessmentEditorProps) {
   const [config, setConfig] = useState<AssessmentConfig | null>(null);
   const [loading, setLoading] = useState(true);
@@ -49,6 +63,28 @@ export function AdminAssessmentEditor({
   useEffect(() => {
     void loadConfig();
   }, [loadConfig, resumeKey]);
+
+  const [openAreaId, setOpenAreaId] = useState<string | null>(null);
+
+  const areaGroups = useMemo(
+    () => (config ? groupQuestionsByArea(config.questions) : []),
+    [config],
+  );
+  const groupByArea = variant === "deep";
+
+  useEffect(() => {
+    if (!groupByArea) {
+      setOpenAreaId(null);
+      return;
+    }
+
+    setOpenAreaId((current) => {
+      if (current && areaGroups.some((group) => group.areaId === current)) {
+        return current;
+      }
+      return areaGroups[0]?.areaId ?? null;
+    });
+  }, [areaGroups, groupByArea, resumeKey]);
 
   function updateScaleLabel(value: number, label: string) {
     setConfig((previous) => {
@@ -107,6 +143,30 @@ export function AdminAssessmentEditor({
     return <p className="form-error">{error || "진단 설정을 불러오지 못했습니다."}</p>;
   }
 
+  function renderQuestionItem(question: AssessmentQuestionConfig, index: number) {
+    return (
+      <div key={question.id} className="admin-question-item">
+        <div className="admin-question-meta">
+          <div className="admin-question-meta-row">
+            <strong>
+              {index + 1}. {question.categoryLabel}
+            </strong>
+            {question.outcomeType ? (
+              <span className="admin-outcome-badge">{outcomeTypeLabels[question.outcomeType]}</span>
+            ) : null}
+          </div>
+          {!groupByArea ? <span className="muted">{question.areaTitle}</span> : null}
+          <span className="muted admin-question-id">{question.id}</span>
+        </div>
+        <textarea
+          rows={groupByArea ? 4 : 3}
+          value={question.prompt}
+          onChange={(event) => updateQuestionPrompt(question.id, event.target.value)}
+        />
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="admin-page-header">
@@ -143,23 +203,45 @@ export function AdminAssessmentEditor({
 
       <article className="card admin-section-card">
         <h3>진단 문항 ({config.questions.length})</h3>
-        <div className="admin-question-editor">
-          {config.questions.map((question, index) => (
-            <div key={question.id} className="admin-question-item">
-              <div className="admin-question-meta">
-                <strong>
-                  {index + 1}. {question.categoryLabel}
-                </strong>
-                <span className="muted">{question.areaTitle}</span>
-              </div>
-              <textarea
-                rows={3}
-                value={question.prompt}
-                onChange={(event) => updateQuestionPrompt(question.id, event.target.value)}
-              />
-            </div>
-          ))}
-        </div>
+        {groupByArea ? (
+          <p className="muted admin-section-lead">
+            영역별로 접어 두었다 펼쳐서 역량·지식/기술/태도 문항을 수정할 수 있습니다.
+          </p>
+        ) : null}
+
+        {groupByArea ? (
+          <div className="admin-area-accordion">
+            {areaGroups.map((group) => {
+              const isOpen = openAreaId === group.areaId;
+
+              return (
+                <div
+                  key={group.areaId}
+                  className={`admin-area-accordion-item${isOpen ? " is-open" : ""}`}
+                >
+                  <button
+                    type="button"
+                    className="admin-area-accordion-summary"
+                    aria-expanded={isOpen}
+                    onClick={() => setOpenAreaId(isOpen ? null : group.areaId)}
+                  >
+                    <span>{group.areaTitle}</span>
+                    <span className="admin-area-accordion-count">{group.questions.length}문항</span>
+                  </button>
+                  {isOpen ? (
+                    <div className="admin-question-editor admin-question-editor-nested">
+                      {group.questions.map((question, index) => renderQuestionItem(question, index))}
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="admin-question-editor">
+            {config.questions.map((question, index) => renderQuestionItem(question, index))}
+          </div>
+        )}
       </article>
     </>
   );

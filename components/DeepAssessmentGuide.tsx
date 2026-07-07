@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CONSULTING_URL, deepAssessmentMeta, proficiencyLevels } from "@/data/deep-assessment";
+import { CONSULTING_URL, deepAssessmentMeta, getDeepAssessmentQuestionCount, proficiencyLevels } from "@/data/deep-assessment";
 import {
   getLatestBasicResult,
   getLatestDeepResult,
@@ -13,6 +13,7 @@ export function DeepAssessmentGuide() {
   if (!basicResult) return null;
 
   const recommendedLevel = basicResult.level;
+  const recommendedQuestionCount = getDeepAssessmentQuestionCount(recommendedLevel);
   const completedDeep = getLatestDeepResult(recommendedLevel);
 
   return (
@@ -21,7 +22,7 @@ export function DeepAssessmentGuide() {
       <h2>심층 진단 안내</h2>
       <p>
         기본 진단을 완료했어요. 추정 숙련도는 <span className="level-badge">{recommendedLevel}</span>
-        입니다. {recommendedLevel} 수준에 맞춘 심층 진단으로 21개 역량을 더 자세히 점검할 수 있어요.
+        입니다. {recommendedLevel} 수준에 맞춘 심층 진단으로 역량별 지식·기술·태도를 더 자세히 점검할 수 있어요.
       </p>
 
       <div className="deep-options">
@@ -29,10 +30,10 @@ export function DeepAssessmentGuide() {
           <span className="eyebrow">온라인</span>
           <h3>심층 진단 ({recommendedLevel})</h3>
           <p>
-            5개 영역 21개 역량 각각에 대한 추가 질문으로, 기본 진단보다 세밀한 역량 프로필을 확인할 수
-            있어요.
+            DigComp 3.0 학습 결과를 바탕으로 21개 역량마다 지식·기술·태도를 각 1문항씩 점검합니다. 기본
+            진단보다 세밀한 역량 프로필을 확인할 수 있어요.
           </p>
-          <p className="muted">{deepAssessmentMeta[recommendedLevel].duration} · 21문항</p>
+          <p className="muted">{deepAssessmentMeta[recommendedLevel].duration} · {recommendedQuestionCount}문항</p>
           {completedDeep ? (
             <p className="form-success">이미 {recommendedLevel} 심층 진단을 완료했어요.</p>
           ) : null}

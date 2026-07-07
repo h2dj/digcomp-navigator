@@ -6,7 +6,8 @@ import { notFound, useParams, useRouter } from "next/navigation";
 import {
   CONSULTING_URL,
   deepAssessmentMeta,
-  isProficiencyLevel,
+  getDeepAssessmentQuestionCount,
+  parseProficiencyLevel,
 } from "@/data/deep-assessment";
 import { DiagnosisFlow } from "@/components/DiagnosisFlow";
 import { getDefaultDeepAssessmentConfig, type AssessmentConfig } from "@/lib/assessment-defaults";
@@ -26,12 +27,14 @@ export default function DeepDiagnosisPage() {
   const params = useParams<{ level: string }>();
   const router = useRouter();
   const levelParam = decodeURIComponent(params.level);
+  const parsedLevel = parseProficiencyLevel(levelParam);
 
-  if (!isProficiencyLevel(levelParam)) {
+  if (!parsedLevel) {
     notFound();
   }
 
-  const level = levelParam as ProficiencyLevel;
+  const level = parsedLevel;
+  const questionCount = getDeepAssessmentQuestionCount(level);
   const basicResult = getLatestBasicResult();
   const meta = deepAssessmentMeta[level];
   const draftKeys = getDeepDraftKeys(level);
@@ -39,6 +42,12 @@ export default function DeepDiagnosisPage() {
   const [assessmentConfig, setAssessmentConfig] = useState<AssessmentConfig>(() =>
     getDefaultDeepAssessmentConfig(level),
   );
+
+  useEffect(() => {
+    if (levelParam !== level) {
+      router.replace(`/diagnosis/deep/${encodeURIComponent(level)}`);
+    }
+  }, [level, levelParam, router]);
 
   useEffect(() => {
     void fetch(`/api/assessment-config/deep/${encodeURIComponent(level)}`)
@@ -60,12 +69,13 @@ export default function DeepDiagnosisPage() {
         <h1>{meta.title}</h1>
         <p className="intro-lead">{meta.lead}</p>
         <p className="intro-copy">
-          <strong>21개 역량 전체</strong>를 점검하는 심층 진단입니다. {meta.duration} 정도 걸려요.
+          <strong>21개 역량</strong>마다 DigComp 3.0 학습 결과(지식·기술·태도)를 바탕으로 한 문항씩 점검합니다.
+          총 <strong>{questionCount}문항</strong>이며 {meta.duration} 정도 걸려요.
         </p>
         <div className="intro-stats">
           <article className="intro-stat-card">
-            <strong>21개 역량</strong>
-            <span>5개 영역 전체</span>
+            <strong>{questionCount}문항</strong>
+            <span>역량별 K·S·A</span>
           </article>
           <article className="intro-stat-card">
             <strong>{level} 수준</strong>
@@ -78,7 +88,7 @@ export default function DeepDiagnosisPage() {
         </div>
       </>
     ),
-    [level, meta],
+    [level, meta, questionCount],
   );
 
   if (!basicResult) {
@@ -100,7 +110,11 @@ export default function DeepDiagnosisPage() {
   }
 
   function handleComplete(answers: AnswerMap) {
-    const result = buildAssessmentResult(answers, { assessmentType: "deep", deepLevel: level });
+    const result = buildAssessmentResult(answers, {
+      assessmentType: "deep",
+      deepLevel: level,
+      questions: assessmentConfig.questions,
+    });
     trackAssessmentComplete("deep", {
       level: result.level,
       overallScore: result.overallScore,

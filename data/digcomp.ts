@@ -25,7 +25,7 @@ export type DigcompArea = {
 export const proficiencyLevels = [
   {
     id: "foundation",
-    label: "기초",
+    label: "초급",
     range: "0.0 - 1.4",
     description: "도움이나 예시가 있을 때 기본 과업을 수행할 수 있어요.",
   },
@@ -37,13 +37,13 @@ export const proficiencyLevels = [
   },
   {
     id: "advanced",
-    label: "고급",
+    label: "상급",
     range: "2.5 - 3.3",
     description: "복잡한 과업을 해결하고 동료에게 방법을 설명할 수 있어요.",
   },
   {
     id: "expert",
-    label: "전문가",
+    label: "최상급",
     range: "3.4 - 4.0",
     description: "새로운 문제를 구조화하고 조직 차원의 개선을 이끌 수 있어요.",
   },
@@ -348,6 +348,7 @@ export type AssessmentQuestion = {
   areaTitle: string;
   categoryLabel: string;
   prompt: string;
+  outcomeType?: "knowledge" | "skill" | "attitude";
 };
 
 const questionsPerArea = 3;

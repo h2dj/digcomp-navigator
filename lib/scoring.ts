@@ -17,7 +17,36 @@ export type CompetencyScore = {
   score: number;
 };
 
-export type ProficiencyLevel = "기초" | "중급" | "고급" | "전문가";
+export type ProficiencyLevel = "초급" | "중급" | "상급" | "최상급";
+
+export const proficiencyLevels: ProficiencyLevel[] = ["초급", "중급", "상급", "최상급"];
+
+export const legacyProficiencyLevelMap: Record<string, ProficiencyLevel> = {
+  기초: "초급",
+  고급: "상급",
+  전문가: "최상급",
+};
+
+export function normalizeProficiencyLevel(value: string | null | undefined): ProficiencyLevel | null {
+  if (!value) return null;
+  if (proficiencyLevels.includes(value as ProficiencyLevel)) {
+    return value as ProficiencyLevel;
+  }
+  return legacyProficiencyLevelMap[value] ?? null;
+}
+
+export function isProficiencyLevel(value: string): value is ProficiencyLevel {
+  return normalizeProficiencyLevel(value) !== null;
+}
+
+export function parseProficiencyLevel(value: string): ProficiencyLevel | null {
+  return normalizeProficiencyLevel(value);
+}
+
+export function getLegacyProficiencyLevel(level: ProficiencyLevel): string | null {
+  const entry = Object.entries(legacyProficiencyLevelMap).find(([, current]) => current === level);
+  return entry?.[0] ?? null;
+}
 
 export type AssessmentType = "basic" | "deep";
 
@@ -67,10 +96,10 @@ export const cohortAverages: Record<DigcompAreaId, number> = {
 };
 
 export function getLevel(score: number): ProficiencyLevel {
-  if (score >= 3.4) return "전문가";
-  if (score >= 2.5) return "고급";
+  if (score >= 3.4) return "최상급";
+  if (score >= 2.5) return "상급";
   if (score >= 1.5) return "중급";
-  return "기초";
+  return "초급";
 }
 
 export function scoreToPercentile(score: number): number {
@@ -84,17 +113,40 @@ export function formatScore(score: number): string {
 
 export function buildAssessmentResult(
   answers: AnswerMap,
-  options: { assessmentType?: AssessmentType; deepLevel?: ProficiencyLevel } = {},
+  options: {
+    assessmentType?: AssessmentType;
+    deepLevel?: ProficiencyLevel;
+    questions?: Array<{ id: string; competencyId: string }>;
+  } = {},
 ): AssessmentResult {
   const directScores = new Map<string, number>();
 
-  for (const competency of allCompetencies) {
-    const answered = competency.prompts
-      .map((_, index) => answers[`${competency.id}:${index}`])
-      .filter((value): value is number => value !== undefined);
+  if (options.questions?.length) {
+    const scoresByCompetency = new Map<string, number[]>();
 
-    if (answered.length > 0) {
-      directScores.set(competency.id, round(average(answered.map((raw) => raw - 1))));
+    for (const question of options.questions) {
+      const raw = answers[question.id];
+      if (raw === undefined) continue;
+
+      const bucket = scoresByCompetency.get(question.competencyId) ?? [];
+      bucket.push(raw - 1);
+      scoresByCompetency.set(question.competencyId, bucket);
+    }
+
+    for (const [competencyId, scores] of scoresByCompetency) {
+      if (scores.length > 0) {
+        directScores.set(competencyId, round(average(scores)));
+      }
+    }
+  } else {
+    for (const competency of allCompetencies) {
+      const answered = competency.prompts
+        .map((_, index) => answers[`${competency.id}:${index}`])
+        .filter((value): value is number => value !== undefined);
+
+      if (answered.length > 0) {
+        directScores.set(competency.id, round(average(answered.map((raw) => raw - 1))));
+      }
     }
   }
 
@@ -154,13 +206,26 @@ export function buildAssessmentResult(
   };
 }
 
+function normalizeAssessmentResult(result: AssessmentResult): AssessmentResult {
+  const level = normalizeProficiencyLevel(result.level) ?? result.level;
+  const deepLevel = result.deepLevel
+    ? normalizeProficiencyLevel(result.deepLevel) ?? result.deepLevel
+    : undefined;
+
+  return {
+    ...result,
+    level,
+    deepLevel,
+  };
+}
+
 export function getHistory(): AssessmentResult[] {
   if (typeof window === "undefined") return [];
   const raw = window.localStorage.getItem(storageKeys.history);
   if (!raw) return [];
 
   try {
-    return JSON.parse(raw) as AssessmentResult[];
+    return (JSON.parse(raw) as AssessmentResult[]).map(normalizeAssessmentResult);
   } catch {
     return [];
   }
@@ -196,10 +261,12 @@ export function getLatestBasicResult(): AssessmentResult | null {
 
 export function getLatestDeepResult(level?: ProficiencyLevel): AssessmentResult | null {
   return (
-    getHistory().find(
-      (result) =>
-        getAssessmentType(result) === "deep" && (!level || result.deepLevel === level),
-    ) ?? null
+    getHistory().find((result) => {
+      if (getAssessmentType(result) !== "deep") return false;
+      if (!level) return true;
+      const deepLevel = normalizeProficiencyLevel(result.deepLevel);
+      return deepLevel === level;
+    }) ?? null
   );
 }
 
@@ -226,7 +293,8 @@ export function getLatestResult(): AssessmentResult | null {
   if (!raw) return getHistory()[0] ?? null;
 
   try {
-    return JSON.parse(raw) as AssessmentResult;
+    const parsed = JSON.parse(raw) as AssessmentResult;
+    return normalizeAssessmentResult(parsed);
   } catch {
     return null;
   }

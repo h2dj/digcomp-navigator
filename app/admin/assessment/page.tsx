@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { deepAssessmentMeta } from "@/data/deep-assessment";
+import { deepAssessmentMeta, getDeepAssessmentQuestionCount } from "@/data/deep-assessment";
 import { AdminAssessmentEditor } from "@/components/AdminAssessmentEditor";
 import { proficiencyLevels } from "@/lib/assessment-defaults";
 import type { ProficiencyLevel } from "@/lib/scoring";
@@ -56,10 +56,11 @@ export default function AdminAssessmentPage() {
       ) : (
         <AdminAssessmentEditor
           title={deepAssessmentMeta[tab].title}
-          description={`${tab} 수준 심층 진단(21문항)의 응답 척도와 문항을 수정합니다. ${deepAssessmentMeta[tab].focus}`}
+          description={`${tab} 수준 심층 진단(${getDeepAssessmentQuestionCount(tab)}문항, 역량별 지식·기술·태도)의 응답 척도와 문항을 수정합니다. ${deepAssessmentMeta[tab].focus}`}
           loadUrl={`/api/admin/assessment-config/deep/${encodeURIComponent(tab)}`}
           saveUrl={`/api/admin/assessment-config/deep/${encodeURIComponent(tab)}`}
           resumeKey={`deep-${tab}`}
+          variant="deep"
         />
       )}
     </section>

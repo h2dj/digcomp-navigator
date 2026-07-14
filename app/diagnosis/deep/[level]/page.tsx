@@ -69,13 +69,13 @@ export default function DeepDiagnosisPage() {
         <h1>{meta.title}</h1>
         <p className="intro-lead">{meta.lead}</p>
         <p className="intro-copy">
-          <strong>21개 역량</strong>마다 DigComp 3.0 학습 결과(지식·기술·태도)를 바탕으로 한 문항씩 점검합니다.
+          <strong>21개 역량</strong>마다 DigComp 3.0 기반 자가평가 문항집의 실제 문항으로 점검합니다.
           총 <strong>{questionCount}문항</strong>이며 {meta.duration} 정도 걸려요.
         </p>
         <div className="intro-stats">
           <article className="intro-stat-card">
             <strong>{questionCount}문항</strong>
-            <span>역량별 K·S·A</span>
+            <span>역량별 행동 문항</span>
           </article>
           <article className="intro-stat-card">
             <strong>{level} 수준</strong>

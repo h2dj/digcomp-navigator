@@ -348,7 +348,6 @@ export type AssessmentQuestion = {
   areaTitle: string;
   categoryLabel: string;
   prompt: string;
-  outcomeType?: "knowledge" | "skill" | "attitude";
 };
 
 const questionsPerArea = 3;

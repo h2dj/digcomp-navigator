@@ -36,7 +36,6 @@ function normalizeQuestions(questions: AssessmentQuestionConfig[]): AssessmentQu
       areaTitle: String(question.areaTitle).trim(),
       categoryLabel: String(question.categoryLabel).trim(),
       prompt: String(question.prompt).trim(),
-      outcomeType: question.outcomeType,
     }))
     .filter((question) => question.id && question.prompt);
 }

@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { digcompAreas } from "@/data/digcomp";
-import { outcomeTypeLabels } from "@/data/learning-outcomes";
 import type { AssessmentConfig, AssessmentQuestionConfig } from "@/lib/assessment-defaults";
 
 type AdminAssessmentEditorProps = {
@@ -151,9 +150,6 @@ export function AdminAssessmentEditor({
             <strong>
               {index + 1}. {question.categoryLabel}
             </strong>
-            {question.outcomeType ? (
-              <span className="admin-outcome-badge">{outcomeTypeLabels[question.outcomeType]}</span>
-            ) : null}
           </div>
           {!groupByArea ? <span className="muted">{question.areaTitle}</span> : null}
           <span className="muted admin-question-id">{question.id}</span>

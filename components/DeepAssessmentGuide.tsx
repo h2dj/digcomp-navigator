@@ -30,8 +30,8 @@ export function DeepAssessmentGuide() {
           <span className="eyebrow">온라인</span>
           <h3>심층 진단 ({recommendedLevel})</h3>
           <p>
-            DigComp 3.0 학습 결과를 바탕으로 21개 역량마다 지식·기술·태도를 각 1문항씩 점검합니다. 기본
-            진단보다 세밀한 역량 프로필을 확인할 수 있어요.
+            DigComp 3.0 기반 자가평가 문항집의 21개 역량별 실제 행동 문항으로 점검합니다. 기본 진단보다
+            세밀한 역량 프로필을 확인할 수 있어요.
           </p>
           <p className="muted">{deepAssessmentMeta[recommendedLevel].duration} · {recommendedQuestionCount}문항</p>
           {completedDeep ? (

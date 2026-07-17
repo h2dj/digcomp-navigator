@@ -4,6 +4,7 @@ import Link from "next/link";
 import { RadarScoreChart } from "@/components/ScoreCharts";
 import { ResultHighlights } from "@/components/ResultHighlights";
 import { ResultSharePanel } from "@/components/ResultSharePanel";
+import { getDigitalTypeDefinition } from "@/data/digital-types";
 import { formatScore, type AssessmentResult } from "@/lib/scoring";
 
 type DeepAssessmentResultsProps = {
@@ -17,7 +18,7 @@ export function DeepAssessmentResults({ results }: DeepAssessmentResultsProps) {
     <section className="section compact">
       <span className="eyebrow">Deep Assessment</span>
       <h2>심층 진단 결과</h2>
-      <p className="muted">역량별 지식·기술·태도를 점검한 심층 진단 결과입니다.</p>
+      <p className="muted">역량별 실제 행동 문항을 점검한 심층 진단 결과입니다.</p>
 
       <div className="deep-results-stack">
         {results.map((result) => (
@@ -31,6 +32,11 @@ export function DeepAssessmentResults({ results }: DeepAssessmentResultsProps) {
                 </div>
                 <p>
                   숙련도 <span className="level-badge">{result.level}</span>
+                  {result.digitalType ? (
+                    <span className="level-badge">
+                      {getDigitalTypeDefinition(result.digitalType.primaryType).name}
+                    </span>
+                  ) : null}
                 </p>
                 <p className="muted">진단일: {new Date(result.createdAt).toLocaleString("ko-KR")}</p>
                 <div className="cta-row">

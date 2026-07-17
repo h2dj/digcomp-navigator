@@ -671,6 +671,114 @@ main {
   color: var(--sage-dark);
 }
 
+/* ── Digital type card ── */
+
+.type-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, var(--sage-dark) 0%, #2a4438 100%);
+  color: #fff;
+  padding: 1.8rem 1.8rem 1.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.type-hero::after {
+  content: "";
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(184, 117, 58, 0.32) 0%, transparent 70%);
+}
+
+.type-hero-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sage-light);
+  margin-bottom: 0.6rem;
+}
+
+.type-hero-name {
+  font-size: clamp(1.6rem, 4vw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.5rem;
+  color: #fff;
+}
+
+.type-hero-desc {
+  color: rgba(255, 255, 255, 0.82);
+  max-width: 42rem;
+  margin: 0 0 1rem;
+}
+
+.type-hero-note {
+  color: rgba(255, 255, 255, 0.82);
+  margin: 0.75rem 0 0;
+  font-size: 0.92rem;
+}
+
+.type-hero-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.type-tag {
+  font-size: 0.8rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.type-activity-list {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.type-activity-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 0.9rem;
+  padding: 0.85rem 1rem;
+}
+
+.type-activity-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  flex-shrink: 0;
+  border-radius: 0.7rem;
+  background: var(--sage-pale);
+  font-size: 1.1rem;
+}
+
+.type-activity-list strong {
+  display: block;
+  color: var(--sage-dark);
+  margin-bottom: 0.2rem;
+}
+
+.type-complement-card {
+  border-left: 4px solid var(--cta);
+}
+
 /* ── Diagnosis intro ── */
 
 .diagnosis-intro {

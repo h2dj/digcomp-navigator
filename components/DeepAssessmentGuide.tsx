@@ -22,7 +22,7 @@ export function DeepAssessmentGuide() {
       <h2>심층 진단 안내</h2>
       <p>
         기본 진단을 완료했어요. 추정 숙련도는 <span className="level-badge">{recommendedLevel}</span>
-        입니다. {recommendedLevel} 수준에 맞춘 심층 진단으로 역량별 지식·기술·태도를 더 자세히 점검할 수 있어요.
+        입니다. {recommendedLevel} 수준에 맞춘 심층 진단으로 역량별 실제 행동 문항을 더 자세히 점검할 수 있어요.
       </p>
 
       <div className="deep-options">

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useState } from "react";
 import { AreaComparisonChart, RadarScoreChart } from "@/components/ScoreCharts";
+import { DigitalTypeCard } from "@/components/DigitalTypeCard";
 import { ResultHighlights } from "@/components/ResultHighlights";
 import { ResultSharePanel } from "@/components/ResultSharePanel";
 import { getDeepAssessmentQuestionCount } from "@/data/deep-assessment";
@@ -50,10 +51,16 @@ export default function ResultsPage() {
         <h1>{isDeep ? `${result.deepLevel} 심층 진단 결과` : "기본 진단 결과"}</h1>
         <p>
           {isDeep
-            ? `역량별 지식·기술·태도 ${deepQuestionCount}문항에 대한 심층 진단 결과입니다.`
+            ? `역량별 실제 행동 문항 ${deepQuestionCount}개에 대한 심층 진단 결과입니다.`
             : "5점 척도 응답을 DigComp 숙련도 0~4점으로 환산했습니다. 대시보드에서 심층 진단 안내를 확인할 수 있어요."}
         </p>
       </section>
+
+      {result.digitalType ? (
+        <section className="section compact">
+          <DigitalTypeCard result={result} />
+        </section>
+      ) : null}
 
       <section className="section compact">
         <div className="score-hero">

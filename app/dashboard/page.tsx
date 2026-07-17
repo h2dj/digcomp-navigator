@@ -171,7 +171,7 @@ export default function DashboardPage() {
               <h2>다음 단계: 심층 진단</h2>
               <p className="muted">
                 추정 숙련도 <span className="level-badge">{basicResult.level}</span>에 맞춘 심층
-                진단({deepQuestionCount}문항, 역량별 지식·기술·태도)으로 역량을 더 자세히 점검할 수 있어요.
+                진단({deepQuestionCount}문항, 역량별 실제 행동 문항)으로 역량을 더 자세히 점검할 수 있어요.
               </p>
               <button className="button secondary" type="button" onClick={() => setTab("deep")}>
                 심층 진단 탭으로 이동 &gt;

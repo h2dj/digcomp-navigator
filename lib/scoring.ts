@@ -1,4 +1,5 @@
 import { allCompetencies, digcompAreas, type DigcompAreaId } from "@/data/digcomp";
+import { canClassifyDigitalType, classifyDigitalType, type DigitalTypeResult } from "@/lib/digital-type-classifier";
 
 export type AnswerMap = Record<string, number>;
 
@@ -61,6 +62,7 @@ export type AssessmentResult = {
   level: ProficiencyLevel;
   strengths: CompetencyScore[];
   growthAreas: CompetencyScore[];
+  digitalType?: DigitalTypeResult;
 };
 
 export type Profile = {
@@ -192,6 +194,11 @@ export function buildAssessmentResult(
   const overallScore = round(average(areaScores.map((area) => area.score)));
   const sortedCompetencies = [...competencyScores].sort((a, b) => b.score - a.score);
 
+  const digitalType =
+    options.assessmentType === "deep" && canClassifyDigitalType(new Set(directScores.keys()))
+      ? classifyDigitalType(Object.fromEntries(directScores))
+      : undefined;
+
   return {
     id: crypto.randomUUID(),
     createdAt: new Date().toISOString(),
@@ -203,6 +210,7 @@ export function buildAssessmentResult(
     level: getLevel(overallScore),
     strengths: sortedCompetencies.slice(0, 3),
     growthAreas: sortedCompetencies.slice(-3).reverse(),
+    digitalType,
   };
 }
 

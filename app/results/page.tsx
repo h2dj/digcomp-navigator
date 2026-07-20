@@ -52,8 +52,14 @@ export default function ResultsPage() {
         <p>
           {isDeep
             ? `역량별 실제 행동 문항 ${deepQuestionCount}개에 대한 심층 진단 결과입니다.`
-            : "5점 척도 응답을 DigComp 숙련도 0~4점으로 환산했습니다. 대시보드에서 심층 진단 안내를 확인할 수 있어요."}
+            : "5점 척도 응답을 DigComp 숙련도 0~4점으로 환산했습니다."}
         </p>
+        {!isDeep ? (
+          <p>
+            심층 진단을 하면 21개 역량을 실제 행동 문항으로 더 자세히 점검하고, 강점 조합으로 판별한{" "}
+            <strong>나의 디지털 유형</strong>과 잘 맞는 활동까지 확인할 수 있어요.
+          </p>
+        ) : null}
       </section>
 
       {result.digitalType ? (

@@ -350,9 +350,9 @@ export type AssessmentQuestion = {
   prompt: string;
 };
 
-const questionsPerArea = 3;
+export const questionsPerArea = 3;
 
-const assessmentCompetencyIds: Partial<Record<DigcompAreaId, string[]>> = {
+export const assessmentCompetencyIds: Partial<Record<DigcompAreaId, string[]>> = {
   "communication-collaboration": ["interact", "collaborate", "citizenship"],
 };
 

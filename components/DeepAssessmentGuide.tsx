@@ -22,7 +22,8 @@ export function DeepAssessmentGuide() {
       <h2>심층 진단 안내</h2>
       <p>
         기본 진단을 완료했어요. 추정 숙련도는 <span className="level-badge">{recommendedLevel}</span>
-        입니다. {recommendedLevel} 수준에 맞춘 심층 진단으로 역량별 실제 행동 문항을 더 자세히 점검할 수 있어요.
+        입니다. {recommendedLevel} 수준에 맞춘 심층 진단으로 역량별 실제 행동 문항을 더 자세히 점검하고,{" "}
+        <strong>나의 디지털 유형까지 확인</strong>할 수 있어요.
       </p>
 
       <div className="deep-options">
@@ -31,7 +32,8 @@ export function DeepAssessmentGuide() {
           <h3>심층 진단 ({recommendedLevel})</h3>
           <p>
             DigComp 3.0 기반 자가평가 문항집의 21개 역량별 실제 행동 문항으로 점검합니다. 기본 진단보다
-            세밀한 역량 프로필을 확인할 수 있어요.
+            세밀한 역량 프로필을 확인할 수 있고, 진단을 마치면 강점 조합을 바탕으로 한{" "}
+            <strong>&ldquo;나의 디지털 유형&rdquo;과 추천 활동</strong>도 함께 알려드려요.
           </p>
           <p className="muted">{deepAssessmentMeta[recommendedLevel].duration} · {recommendedQuestionCount}문항</p>
           {completedDeep ? (

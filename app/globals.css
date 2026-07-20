@@ -779,6 +779,85 @@ main {
   border-left: 4px solid var(--cta);
 }
 
+/* ── Digital type picker (basic diagnosis intro step) ── */
+
+.type-picker-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(1100px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 4rem 0 3rem;
+  text-align: center;
+}
+
+.type-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1rem;
+  width: 100%;
+  margin-top: 2rem;
+  text-align: left;
+}
+
+.type-picker-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  padding: 1.25rem;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.type-picker-card:hover {
+  border-color: var(--sage-light);
+  box-shadow: 0 16px 40px rgba(44, 62, 51, 0.1);
+  transform: translateY(-2px);
+}
+
+.type-picker-card strong {
+  color: var(--sage-dark);
+  font-size: 1.02rem;
+}
+
+.type-picker-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.type-picker-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.type-picker-tag {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: var(--sage-pale);
+  color: var(--sage-dark);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+}
+
+.type-picker-skip {
+  margin-top: 1.75rem;
+}
+
 /* ── Diagnosis intro ── */
 
 .diagnosis-intro {

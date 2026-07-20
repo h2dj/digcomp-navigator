@@ -87,6 +87,7 @@ export const storageKeys = {
   profile: "digcomp-navigator:profile",
   draftAnswers: "digcomp-navigator:draft-answers",
   draftQuestionIndex: "digcomp-navigator:draft-question-index",
+  draftBasicType: "digcomp-navigator:draft-basic-type",
 };
 
 export const cohortAverages: Record<DigcompAreaId, number> = {
@@ -243,6 +244,7 @@ export function clearAssessmentDraft(): void {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(storageKeys.draftAnswers);
   window.localStorage.removeItem(storageKeys.draftQuestionIndex);
+  window.localStorage.removeItem(storageKeys.draftBasicType);
 }
 
 export function getDeepDraftKeys(level: ProficiencyLevel) {

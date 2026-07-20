@@ -109,7 +109,7 @@ export default function BasicDiagnosisPage() {
   );
 
   function handleComplete(answers: AnswerMap) {
-    const result = buildAssessmentResult(answers, { assessmentType: "basic" });
+    const result = buildAssessmentResult(answers, { assessmentType: "basic", selectedTypeId: chosenType });
     trackAssessmentComplete("basic", { level: result.level, overallScore: result.overallScore });
     saveResult(result);
     void pushUserDataToServer({ result });

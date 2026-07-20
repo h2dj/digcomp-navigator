@@ -27,6 +27,8 @@ export type DigitalTypeResult = {
   latentType: DigitalTypeId | null;
   explanation: string;
   candidates: DigitalTypeCandidate[];
+  /** true면 21개 역량 중 일부만 직접 응답된 상태(예: 기본 진단)에서 산출한 참고용 추정치 */
+  basedOnPartialData?: boolean;
 };
 
 function mean(nums: number[]): number {

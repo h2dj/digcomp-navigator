@@ -6,6 +6,7 @@ import { AreaComparisonChart, RadarScoreChart } from "@/components/ScoreCharts";
 import { DigitalTypeCard } from "@/components/DigitalTypeCard";
 import { ResultHighlights } from "@/components/ResultHighlights";
 import { ResultSharePanel } from "@/components/ResultSharePanel";
+import { TypeMatchInsight } from "@/components/TypeMatchInsight";
 import { getDeepAssessmentQuestionCount } from "@/data/deep-assessment";
 import { getLatestResult, formatScore, clearAssessmentDraft, getAssessmentType, type AssessmentResult } from "@/lib/scoring";
 import { useUserDataRefresh } from "@/lib/use-user-data-refresh";
@@ -62,9 +63,15 @@ export default function ResultsPage() {
         ) : null}
       </section>
 
-      {result.digitalType ? (
+      {isDeep && result.digitalType ? (
         <section className="section compact">
           <DigitalTypeCard result={result} />
+        </section>
+      ) : null}
+
+      {!isDeep && result.digitalType ? (
+        <section className="section compact">
+          <TypeMatchInsight result={result} />
         </section>
       ) : null}
 

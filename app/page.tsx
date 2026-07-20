@@ -21,6 +21,54 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="section compact">
+        <h2 className="section-heading">이용 순서</h2>
+        <p className="muted process-intro">아래 순서대로 진행하면 나에게 맞는 디지털 역량 성장 경로를 찾을 수 있어요.</p>
+        <div className="process-steps">
+          <article className="process-step">
+            <span className="process-step-number">1</span>
+            <span className="process-step-icon" aria-hidden="true">
+              🧭
+            </span>
+            <h3>내 유형 추정</h3>
+            <p>7가지 디지털 유형 중 지금 나와 가장 가까운 모습을 골라요.</p>
+          </article>
+          <span className="process-step-arrow" aria-hidden="true">
+            →
+          </span>
+          <article className="process-step">
+            <span className="process-step-number">2</span>
+            <span className="process-step-icon" aria-hidden="true">
+              ✓
+            </span>
+            <h3>기본 진단하기</h3>
+            <p>15개 문항으로 5개 영역의 대략적인 역량 수준을 확인해요.</p>
+          </article>
+          <span className="process-step-arrow" aria-hidden="true">
+            →
+          </span>
+          <article className="process-step">
+            <span className="process-step-number">3</span>
+            <span className="process-step-icon" aria-hidden="true">
+              🔍
+            </span>
+            <h3>심층 진단하기</h3>
+            <p>21개 역량을 실제 행동 문항으로 점검하고 나의 디지털 유형을 확인해요.</p>
+          </article>
+          <span className="process-step-arrow" aria-hidden="true">
+            →
+          </span>
+          <article className="process-step">
+            <span className="process-step-number">4</span>
+            <span className="process-step-icon" aria-hidden="true">
+              🤝
+            </span>
+            <h3>컨설팅 받기</h3>
+            <p>공동체IT 전문가와 1:1로 더 정확한 진단과 성장 시나리오를 상담해요.</p>
+          </article>
+        </div>
+      </section>
+
       <section className="info-card">
         <div className="info-card-header">
           <span aria-hidden="true">📖</span>

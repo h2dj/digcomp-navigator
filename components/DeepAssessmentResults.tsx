@@ -33,9 +33,9 @@ export function DeepAssessmentResults({ results }: DeepAssessmentResultsProps) {
                 <p>
                   숙련도 <span className="level-badge">{result.level}</span>
                   {result.digitalType ? (
-                    <span className="level-badge">
+                    <Link href={`/types/${result.digitalType.primaryType}`} className="level-badge level-badge-link">
                       {getDigitalTypeDefinition(result.digitalType.primaryType).name}
-                    </span>
+                    </Link>
                   ) : null}
                 </p>
                 <p className="muted">진단일: {new Date(result.createdAt).toLocaleString("ko-KR")}</p>

@@ -304,6 +304,12 @@ export function getDigitalTypeDefinition(id: DigitalTypeId): DigitalTypeDefiniti
   return found;
 }
 
+export const allDigitalTypeIds: DigitalTypeId[] = ["T0", "T1", "T2", "T3", "T4", "T5", "T6", "T7"];
+
+export function isDigitalTypeId(value: string): value is DigitalTypeId {
+  return (allDigitalTypeIds as string[]).includes(value);
+}
+
 /** 유형 판별 튜닝 파라미터 */
 export const digitalTypeParams = {
   ABS_THRESHOLD: 3.5,

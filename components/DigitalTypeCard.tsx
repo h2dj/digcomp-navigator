@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { allCompetencies } from "@/data/digcomp";
 import { getDigitalTypeDefinition } from "@/data/digital-types";
 import { formatScore, type AssessmentResult } from "@/lib/scoring";
@@ -30,7 +31,9 @@ export function DigitalTypeCard({ result }: DigitalTypeCardProps) {
     <>
       <section className="type-hero">
         <span className="type-hero-label">당신의 디지털 유형</span>
-        <h2 className="type-hero-name">{primary.name}</h2>
+        <h2 className="type-hero-name">
+          <Link href={`/types/${primary.id}`}>{primary.name}</Link>
+        </h2>
         <p className="type-hero-desc">{primary.description}</p>
         <div className="type-hero-tags">
           {primary.tags.map((tag) => (

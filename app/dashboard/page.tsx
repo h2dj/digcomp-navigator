@@ -7,6 +7,7 @@ import { DeepAssessmentGuide } from "@/components/DeepAssessmentGuide";
 import { DeepAssessmentResults } from "@/components/DeepAssessmentResults";
 import { ResultHighlights } from "@/components/ResultHighlights";
 import { ResultSharePanel } from "@/components/ResultSharePanel";
+import { TypeMatchInsight } from "@/components/TypeMatchInsight";
 import { getDeepAssessmentQuestionCount } from "@/data/deep-assessment";
 import {
   formatScore,
@@ -165,6 +166,12 @@ export default function DashboardPage() {
           <section className="section compact">
             <ResultHighlights result={basicResult} />
           </section>
+
+          {basicResult.digitalType ? (
+            <section className="section compact">
+              <TypeMatchInsight result={basicResult} />
+            </section>
+          ) : null}
 
           <section className="section compact">
             <article className="card dashboard-next-tab">

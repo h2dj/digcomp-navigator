@@ -1,5 +1,6 @@
 import { allCompetencies, digcompAreas, type DigcompAreaId } from "@/data/digcomp";
 import { canClassifyDigitalType, classifyDigitalType, type DigitalTypeResult } from "@/lib/digital-type-classifier";
+import type { DigitalTypeId } from "@/data/digital-types";
 
 export type AnswerMap = Record<string, number>;
 
@@ -63,6 +64,8 @@ export type AssessmentResult = {
   strengths: CompetencyScore[];
   growthAreas: CompetencyScore[];
   digitalType?: DigitalTypeResult;
+  /** 진단 시작 전 사용자가 고른 디지털 유형(기본 진단만 해당, 건너뛰었으면 null) */
+  selectedTypeId?: DigitalTypeId | null;
 };
 
 export type Profile = {
@@ -120,6 +123,7 @@ export function buildAssessmentResult(
     assessmentType?: AssessmentType;
     deepLevel?: ProficiencyLevel;
     questions?: Array<{ id: string; competencyId: string }>;
+    selectedTypeId?: DigitalTypeId | null;
   } = {},
 ): AssessmentResult {
   const directScores = new Map<string, number>();
@@ -195,10 +199,16 @@ export function buildAssessmentResult(
   const overallScore = round(average(areaScores.map((area) => area.score)));
   const sortedCompetencies = [...competencyScores].sort((a, b) => b.score - a.score);
 
-  const digitalType =
-    options.assessmentType === "deep" && canClassifyDigitalType(new Set(directScores.keys()))
-      ? classifyDigitalType(Object.fromEntries(directScores))
-      : undefined;
+  let digitalType: DigitalTypeResult | undefined;
+  if (options.assessmentType === "deep") {
+    if (canClassifyDigitalType(new Set(directScores.keys()))) {
+      digitalType = classifyDigitalType(Object.fromEntries(directScores));
+    }
+  } else {
+    // 기본 진단은 21개 역량 중 일부만 직접 응답하므로(나머지는 영역 평균으로 대체) 참고용 추정치로 계산한다.
+    const competencyScoreMap = Object.fromEntries(competencyScores.map((score) => [score.competencyId, score.score]));
+    digitalType = { ...classifyDigitalType(competencyScoreMap), basedOnPartialData: true };
+  }
 
   return {
     id: crypto.randomUUID(),
@@ -212,6 +222,7 @@ export function buildAssessmentResult(
     strengths: sortedCompetencies.slice(0, 3),
     growthAreas: sortedCompetencies.slice(-3).reverse(),
     digitalType,
+    selectedTypeId: options.selectedTypeId ?? null,
   };
 }
 

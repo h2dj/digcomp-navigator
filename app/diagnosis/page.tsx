@@ -4,8 +4,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DiagnosisFlow } from "@/components/DiagnosisFlow";
 import { DigitalTypePicker } from "@/components/DigitalTypePicker";
+import { InterestTagPicker } from "@/components/InterestTagPicker";
 import { getAssessmentQuestionsForType } from "@/data/type-tailored-assessment";
 import { getDigitalTypeDefinition, type DigitalTypeId } from "@/data/digital-types";
+import { defaultInterestTagId, getInterestTagLabel, isInterestTagId, type InterestTagId } from "@/data/interest-tags";
+import { personalizeQuestions } from "@/data/question-example-variants";
 import { getDefaultAssessmentConfig, type AssessmentConfig } from "@/lib/assessment-defaults";
 import { trackAssessmentComplete } from "@/lib/analytics";
 import {
@@ -17,15 +20,14 @@ import {
 } from "@/lib/scoring";
 import { pushUserDataToServer } from "@/lib/user-sync";
 
-type TypeChoiceState =
-  | { status: "loading" }
-  | { status: "picking" }
-  | { status: "resolved"; typeId: DigitalTypeId | null };
+type FlowStep = "loading" | "interest" | "type" | "questions";
 
 export default function BasicDiagnosisPage() {
   const router = useRouter();
   const [assessmentConfig, setAssessmentConfig] = useState<AssessmentConfig>(() => getDefaultAssessmentConfig());
-  const [typeChoice, setTypeChoice] = useState<TypeChoiceState>({ status: "loading" });
+  const [step, setStep] = useState<FlowStep>("loading");
+  const [interestTagId, setInterestTagId] = useState<InterestTagId>(defaultInterestTagId);
+  const [typeId, setTypeId] = useState<DigitalTypeId | null>(null);
 
   useEffect(() => {
     void fetch("/api/assessment-config")
@@ -41,29 +43,36 @@ export default function BasicDiagnosisPage() {
   useEffect(() => {
     const hasDraft = Boolean(window.localStorage.getItem(storageKeys.draftAnswers));
     if (!hasDraft) {
-      setTypeChoice({ status: "picking" });
+      setStep("interest");
       return;
     }
 
-    const saved = window.localStorage.getItem(storageKeys.draftBasicType);
-    setTypeChoice({ status: "resolved", typeId: saved && saved !== "null" ? (saved as DigitalTypeId) : null });
+    const savedInterest = window.localStorage.getItem(storageKeys.draftInterestTag);
+    const savedType = window.localStorage.getItem(storageKeys.draftBasicType);
+    setInterestTagId(savedInterest && isInterestTagId(savedInterest) ? savedInterest : defaultInterestTagId);
+    setTypeId(savedType && savedType !== "null" ? (savedType as DigitalTypeId) : null);
+    setStep("questions");
   }, []);
 
-  const handleTypeSelected = useCallback((typeId: DigitalTypeId | null) => {
-    window.localStorage.setItem(storageKeys.draftBasicType, typeId ?? "null");
-    setTypeChoice({ status: "resolved", typeId });
+  const handleInterestSelected = useCallback((tagId: InterestTagId) => {
+    window.localStorage.setItem(storageKeys.draftInterestTag, tagId);
+    setInterestTagId(tagId);
+    setStep("type");
   }, []);
 
-  const chosenType = typeChoice.status === "resolved" ? typeChoice.typeId : null;
+  const handleTypeSelected = useCallback((selected: DigitalTypeId | null) => {
+    window.localStorage.setItem(storageKeys.draftBasicType, selected ?? "null");
+    setTypeId(selected);
+    setStep("questions");
+  }, []);
+
   // T7(전략가)은 특정 핵심 역량이 없어 기존 기본 문항 구성과 동일하므로 별도 처리가 필요 없다.
-  const usesTailoredQuestions = Boolean(chosenType && chosenType !== "T7");
+  const usesTailoredQuestions = Boolean(typeId && typeId !== "T7");
 
   const questions = useMemo(() => {
-    if (usesTailoredQuestions && chosenType) {
-      return getAssessmentQuestionsForType(chosenType);
-    }
-    return assessmentConfig.questions;
-  }, [usesTailoredQuestions, chosenType, assessmentConfig.questions]);
+    const base = usesTailoredQuestions && typeId ? getAssessmentQuestionsForType(typeId) : assessmentConfig.questions;
+    return personalizeQuestions(base, interestTagId);
+  }, [usesTailoredQuestions, typeId, assessmentConfig.questions, interestTagId]);
 
   const intro = useMemo(
     () => (
@@ -76,10 +85,15 @@ export default function BasicDiagnosisPage() {
         <p className="intro-copy">
           <strong>정답은 없어요.</strong> 지금 내 상황을 솔직하게 체크하면 됩니다. 약 5분 정도 걸려요.
         </p>
-        {usesTailoredQuestions && chosenType ? (
+        {usesTailoredQuestions && typeId ? (
           <p className="intro-copy">
-            <strong>{getDigitalTypeDefinition(chosenType).name}</strong> 유형과 관련 있는 역량 위주로 문항을
+            <strong>{getDigitalTypeDefinition(typeId).name}</strong> 유형과 관련 있는 역량 위주로 문항을
             구성했어요.
+          </p>
+        ) : null}
+        {interestTagId !== "general" ? (
+          <p className="intro-copy">
+            <strong>{getInterestTagLabel(interestTagId)}</strong> 분야에 와닿는 예시로 일부 문항을 다듬었어요.
           </p>
         ) : null}
         <div className="intro-stats">
@@ -96,31 +110,35 @@ export default function BasicDiagnosisPage() {
             <span>심층 진단 안내</span>
           </article>
         </div>
-        <button
-          type="button"
-          className="text-button type-picker-skip"
-          onClick={() => setTypeChoice({ status: "picking" })}
-        >
-          유형 다시 선택하기
+        <button type="button" className="text-button type-picker-skip" onClick={() => setStep("interest")}>
+          관심 분야·유형 다시 선택하기
         </button>
       </>
     ),
-    [questions.length, usesTailoredQuestions, chosenType],
+    [questions.length, usesTailoredQuestions, typeId, interestTagId],
   );
 
   function handleComplete(answers: AnswerMap) {
-    const result = buildAssessmentResult(answers, { assessmentType: "basic", selectedTypeId: chosenType });
+    const result = buildAssessmentResult(answers, {
+      assessmentType: "basic",
+      selectedTypeId: typeId,
+      selectedInterestTagId: interestTagId === "general" ? null : interestTagId,
+    });
     trackAssessmentComplete("basic", { level: result.level, overallScore: result.overallScore });
     saveResult(result);
     void pushUserDataToServer({ result });
     router.push("/results");
   }
 
-  if (typeChoice.status === "loading") {
+  if (step === "loading") {
     return null;
   }
 
-  if (typeChoice.status === "picking") {
+  if (step === "interest") {
+    return <InterestTagPicker onSelect={handleInterestSelected} />;
+  }
+
+  if (step === "type") {
     return <DigitalTypePicker onSelect={handleTypeSelected} />;
   }
 

@@ -1,6 +1,7 @@
 import { allCompetencies, digcompAreas, type DigcompAreaId } from "@/data/digcomp";
 import { canClassifyDigitalType, classifyDigitalType, type DigitalTypeResult } from "@/lib/digital-type-classifier";
 import type { DigitalTypeId } from "@/data/digital-types";
+import type { InterestTagId } from "@/data/interest-tags";
 
 export type AnswerMap = Record<string, number>;
 
@@ -66,6 +67,8 @@ export type AssessmentResult = {
   digitalType?: DigitalTypeResult;
   /** 진단 시작 전 사용자가 고른 디지털 유형(기본 진단만 해당, 건너뛰었으면 null) */
   selectedTypeId?: DigitalTypeId | null;
+  /** 진단 시작 전 사용자가 고른 관심 분야(기본 진단만 해당, 일반/건너뛰었으면 null) */
+  selectedInterestTagId?: InterestTagId | null;
 };
 
 export type Profile = {
@@ -91,6 +94,7 @@ export const storageKeys = {
   draftAnswers: "digcomp-navigator:draft-answers",
   draftQuestionIndex: "digcomp-navigator:draft-question-index",
   draftBasicType: "digcomp-navigator:draft-basic-type",
+  draftInterestTag: "digcomp-navigator:draft-interest-tag",
 };
 
 export const cohortAverages: Record<DigcompAreaId, number> = {
@@ -124,6 +128,7 @@ export function buildAssessmentResult(
     deepLevel?: ProficiencyLevel;
     questions?: Array<{ id: string; competencyId: string }>;
     selectedTypeId?: DigitalTypeId | null;
+    selectedInterestTagId?: InterestTagId | null;
   } = {},
 ): AssessmentResult {
   const directScores = new Map<string, number>();
@@ -223,6 +228,7 @@ export function buildAssessmentResult(
     growthAreas: sortedCompetencies.slice(-3).reverse(),
     digitalType,
     selectedTypeId: options.selectedTypeId ?? null,
+    selectedInterestTagId: options.selectedInterestTagId ?? null,
   };
 }
 
@@ -256,6 +262,7 @@ export function clearAssessmentDraft(): void {
   window.localStorage.removeItem(storageKeys.draftAnswers);
   window.localStorage.removeItem(storageKeys.draftQuestionIndex);
   window.localStorage.removeItem(storageKeys.draftBasicType);
+  window.localStorage.removeItem(storageKeys.draftInterestTag);
 }
 
 export function getDeepDraftKeys(level: ProficiencyLevel) {

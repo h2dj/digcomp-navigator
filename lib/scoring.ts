@@ -1,6 +1,5 @@
 import { allCompetencies, digcompAreas, type DigcompAreaId } from "@/data/digcomp";
-import { canClassifyDigitalType, classifyDigitalType, type DigitalTypeResult } from "@/lib/digital-type-classifier";
-import type { DigitalTypeId } from "@/data/digital-types";
+import { classifyDigitalType, type DigitalTypeResult } from "@/lib/digital-type-classifier";
 import type { InterestTagId } from "@/data/interest-tags";
 
 export type AnswerMap = Record<string, number>;
@@ -65,8 +64,6 @@ export type AssessmentResult = {
   strengths: CompetencyScore[];
   growthAreas: CompetencyScore[];
   digitalType?: DigitalTypeResult;
-  /** 진단 시작 전 사용자가 고른 디지털 유형(기본 진단만 해당, 건너뛰었으면 null) */
-  selectedTypeId?: DigitalTypeId | null;
   /** 진단 시작 전 사용자가 고른 관심 분야(기본 진단만 해당, 일반/건너뛰었으면 null) */
   selectedInterestTagId?: InterestTagId | null;
 };
@@ -127,7 +124,6 @@ export function buildAssessmentResult(
     assessmentType?: AssessmentType;
     deepLevel?: ProficiencyLevel;
     questions?: Array<{ id: string; competencyId: string }>;
-    selectedTypeId?: DigitalTypeId | null;
     selectedInterestTagId?: InterestTagId | null;
   } = {},
 ): AssessmentResult {
@@ -204,16 +200,9 @@ export function buildAssessmentResult(
   const overallScore = round(average(areaScores.map((area) => area.score)));
   const sortedCompetencies = [...competencyScores].sort((a, b) => b.score - a.score);
 
-  let digitalType: DigitalTypeResult | undefined;
-  if (options.assessmentType === "deep") {
-    if (canClassifyDigitalType(new Set(directScores.keys()))) {
-      digitalType = classifyDigitalType(Object.fromEntries(directScores));
-    }
-  } else {
-    // 기본 진단은 21개 역량 중 일부만 직접 응답하므로(나머지는 영역 평균으로 대체) 참고용 추정치로 계산한다.
-    const competencyScoreMap = Object.fromEntries(competencyScores.map((score) => [score.competencyId, score.score]));
-    digitalType = { ...classifyDigitalType(competencyScoreMap), basedOnPartialData: true };
-  }
+  // 5개 영역 점수만 있으면 판별 가능하므로 기본·심층 진단 모두 동일하게 계산한다.
+  const areaScoreMap = Object.fromEntries(areaScores.map((area) => [area.areaId, area.score]));
+  const digitalType = classifyDigitalType(areaScoreMap);
 
   return {
     id: crypto.randomUUID(),
@@ -227,7 +216,6 @@ export function buildAssessmentResult(
     strengths: sortedCompetencies.slice(0, 3),
     growthAreas: sortedCompetencies.slice(-3).reverse(),
     digitalType,
-    selectedTypeId: options.selectedTypeId ?? null,
     selectedInterestTagId: options.selectedInterestTagId ?? null,
   };
 }

@@ -1,149 +1,65 @@
-import { allCompetencies, digcompAreas, type DigcompAreaId } from "@/data/digcomp";
+import { digcompAreas, type DigcompAreaId } from "@/data/digcomp";
 import {
-  digitalTypeDefinitions,
   digitalTypeParams as PARAMS,
-  digitalTypeT0,
-  digitalTypeT7,
+  getSingleTypeId,
+  getSynergyTypeId,
+  sproutTypeId,
   type DigitalTypeId,
 } from "@/data/digital-types";
 
 /**
- * 21개 역량 점수(0~4, 앱 내부 척도)를 입력받아 디지털 유형(T0~T7)을 판별한다.
- * 임계값은 원본 설계(1.0~5.0 척도, Likert 평균) 기준이므로 내부적으로 +1 하여 사용한다.
+ * 영역별 점수(0~4, 앱 내부 척도)를 입력받아 디지털 활용 유형 16종 중 하나를 판별한다.
+ * 판정 기준은 100점 환산 기준으로 설계되어 있어, 내부적으로 (score/4)*100 으로 환산해 적용한다.
  */
 
-export type DigitalTypeCandidate = {
-  typeId: DigitalTypeId;
-  name: string;
-  score: number;
-  gapFromMean: number;
-  eligible: boolean;
+export type DigitalTypeAreaScore = {
+  areaId: DigcompAreaId;
+  areaTitle: string;
+  percent: number;
 };
 
 export type DigitalTypeResult = {
-  primaryType: DigitalTypeId;
-  secondaryType: DigitalTypeId | null;
-  fallbackCase: "A" | "B" | null;
-  latentType: DigitalTypeId | null;
+  typeId: DigitalTypeId;
+  /** 영역 점수를 100점 환산해 높은 순으로 정렬한 목록(판별 근거 표시용) */
+  areaScores: DigitalTypeAreaScore[];
   explanation: string;
-  candidates: DigitalTypeCandidate[];
-  /** true면 21개 역량 중 일부만 직접 응답된 상태(예: 기본 진단)에서 산출한 참고용 추정치 */
-  basedOnPartialData?: boolean;
 };
 
-function mean(nums: number[]): number {
-  return nums.reduce((a, b) => a + b, 0) / nums.length;
+function round1(n: number): number {
+  return Math.round(n * 10) / 10;
 }
 
-function stdev(nums: number[]): number {
-  const m = mean(nums);
-  return Math.sqrt(mean(nums.map((n) => (n - m) ** 2)));
-}
+export function classifyDigitalType(areaScores: Record<string, number>): DigitalTypeResult {
+  const percentScores: DigitalTypeAreaScore[] = digcompAreas.map((area) => ({
+    areaId: area.id,
+    areaTitle: area.title,
+    percent: round1(((areaScores[area.id] ?? 0) / 4) * 100),
+  }));
 
-function round2(n: number): number {
-  return Math.round(n * 100) / 100;
-}
+  const sorted = [...percentScores].sort((a, b) => b.percent - a.percent);
+  const [top1, top2] = sorted;
 
-/** 심층 진단에서 21개 역량이 모두 직접 응답되었는지 확인한다. */
-export function canClassifyDigitalType(directlyScoredCompetencyIds: Set<string>): boolean {
-  return allCompetencies.every((competency) => directlyScoredCompetencyIds.has(competency.id));
-}
-
-export function classifyDigitalType(competencyScores: Record<string, number>): DigitalTypeResult {
-  // 내부 0~4 척도를 원본 설계 기준인 1~5 척도로 환산
-  const toLikert = (competencyId: string) => (competencyScores[competencyId] ?? 0) + 1;
-
-  const values = allCompetencies.map((competency) => toLikert(competency.id));
-  const overallMean = mean(values);
-  const sd = stdev(values);
-  const isFlat = sd < PARAMS.FLAT_STDEV;
-
-  const areaMeans = Object.fromEntries(
-    digcompAreas.map((area) => {
-      const ids = allCompetencies.filter((c) => c.areaId === area.id).map((c) => c.id);
-      return [area.id, mean(ids.map(toLikert))];
-    }),
-  ) as Record<DigcompAreaId, number>;
-
-  const candidates: DigitalTypeCandidate[] = digitalTypeDefinitions.map((def) => {
-    const coreScores = def.core.map(toLikert);
-    const score = mean(coreScores);
-    const gapFromMean = score - overallMean;
-    const minCore = Math.min(...coreScores);
-
-    const eligible =
-      score >= PARAMS.ABS_THRESHOLD && gapFromMean >= PARAMS.REL_GAP && minCore >= PARAMS.MIN_CORE;
-
+  if (top1.percent < PARAMS.BEGINNER_MAX) {
     return {
-      typeId: def.id,
-      name: def.name,
-      score: round2(score),
-      gapFromMean: round2(gapFromMean),
-      eligible,
-    };
-  });
-
-  // STEP 1. 전략가(T7) 선행 판정 — 플랫 프로필 가드를 적용하지 않는다.
-  const areaValues = Object.values(areaMeans);
-  const isStrategist =
-    areaValues.filter((a) => a >= PARAMS.STRATEGIST_AREA_THRESHOLD).length >= PARAMS.STRATEGIST_AREA_COUNT &&
-    areaValues.every((a) => a >= PARAMS.STRATEGIST_AREA_FLOOR) &&
-    overallMean >= PARAMS.STRATEGIST_MEAN;
-
-  if (isStrategist) {
-    return {
-      primaryType: "T7",
-      secondaryType: null,
-      fallbackCase: null,
-      latentType: null,
-      candidates,
-      explanation: `${digitalTypeT7.name}: 5개 영역이 고르게 높아 조직 전체를 보는 제너럴리스트 유형으로 판별되었습니다.`,
+      typeId: sproutTypeId,
+      areaScores: sorted,
+      explanation: `모든 영역이 아직 기초 단계(최고 ${top1.percent}점)라 디지털 새싹으로 안내합니다.`,
     };
   }
 
-  // STEP 2~3. 적격 후보 정렬 (플랫 프로필이면 스페셜리스트 판별을 건너뛴다)
-  const eligible = candidates.filter((c) => c.eligible);
-
-  if (!isFlat && eligible.length > 0) {
-    const sorted = [...eligible].sort((a, b) => b.score - a.score || b.gapFromMean - a.gapFromMean);
-    const first = sorted[0];
-    const second = sorted[1] ?? null;
-    const isDual = second !== null && first.score - second.score <= PARAMS.DUAL_TYPE_GAP;
-
+  if (top1.percent >= PARAMS.SYNERGY_MIN && top2.percent >= PARAMS.SYNERGY_MIN && top1.percent - top2.percent <= PARAMS.SYNERGY_GAP) {
+    const typeId = getSynergyTypeId(top1.areaId, top2.areaId);
     return {
-      primaryType: first.typeId,
-      secondaryType: isDual ? second!.typeId : null,
-      fallbackCase: null,
-      latentType: null,
-      candidates,
-      explanation: isDual
-        ? `${first.name}(${first.score})와 ${second!.name}(${second!.score})의 점수가 근접해 복합 유형으로 판별되었습니다.`
-        : `핵심 역량 평균 ${first.score}점, 전체 평균 대비 +${first.gapFromMean}점으로 ${first.name} 유형으로 판별되었습니다.`,
+      typeId,
+      areaScores: sorted,
+      explanation: `${top1.areaTitle}(${top1.percent}점)와 ${top2.areaTitle}(${top2.percent}점)가 함께 높아 시너지형으로 판별되었습니다.`,
     };
   }
 
-  // STEP 5. 폴백 — 성장 탐색가(T0)
-  if (overallMean < PARAMS.FALLBACK_CASE_A_MEAN) {
-    return {
-      primaryType: "T0",
-      secondaryType: null,
-      fallbackCase: "A",
-      latentType: null,
-      candidates,
-      explanation: `전체 평균 ${round2(overallMean)}점으로 ${digitalTypeT0.name} 단계입니다. 특정 유형보다 기초 역량 전반의 성장을 먼저 안내합니다.`,
-    };
-  }
-
-  const latent = [...candidates].sort((a, b) => b.score - a.score || b.gapFromMean - a.gapFromMean)[0];
-
+  const typeId = getSingleTypeId(top1.areaId);
   return {
-    primaryType: "T0",
-    secondaryType: null,
-    fallbackCase: "B",
-    latentType: latent.typeId,
-    candidates,
-    explanation: isFlat
-      ? `역량 간 차이가 작아 탐색 단계로 안내합니다. 상대적으로 ${latent.name}(${latent.score}점) 방향의 잠재력이 보입니다.`
-      : `아직 뚜렷한 유형은 없지만 ${latent.name}(${latent.score}점) 유형의 씨앗이 보입니다. 핵심 역량을 키우면 이 유형으로 성장할 수 있습니다.`,
+    typeId,
+    areaScores: sorted,
+    explanation: `${top1.areaTitle}(${top1.percent}점)가 다른 영역보다 뚜렷하게 높아 단일 강점형으로 판별되었습니다.`,
   };
 }

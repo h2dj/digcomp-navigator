@@ -25,14 +25,14 @@ export default function HomePage() {
         <h2 className="section-heading">이용 순서</h2>
         <p className="muted process-intro">아래 순서대로 진행하면 나에게 맞는 디지털 역량 성장 경로를 찾을 수 있어요.</p>
         <div className="process-steps">
-          <article className="process-step">
+          <Link href="/mini-test" className="process-step">
             <span className="process-step-number">1</span>
             <span className="process-step-icon" aria-hidden="true">
               🧭
             </span>
             <h3>내 유형 추정</h3>
-            <p>7가지 디지털 유형 중 지금 나와 가장 가까운 모습을 골라요.</p>
-          </article>
+            <p>1분 미니 테스트로 16가지 디지털 활용 유형 중 나와 가까운 유형을 가볍게 알아봐요.</p>
+          </Link>
           <span className="process-step-arrow" aria-hidden="true">
             →
           </span>

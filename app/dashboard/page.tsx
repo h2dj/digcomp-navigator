@@ -5,9 +5,9 @@ import { useCallback, useState } from "react";
 import { GrowthLineChart, RadarScoreChart } from "@/components/ScoreCharts";
 import { DeepAssessmentGuide } from "@/components/DeepAssessmentGuide";
 import { DeepAssessmentResults } from "@/components/DeepAssessmentResults";
+import { DigitalTypeCard } from "@/components/DigitalTypeCard";
 import { ResultHighlights } from "@/components/ResultHighlights";
 import { ResultSharePanel } from "@/components/ResultSharePanel";
-import { TypeMatchInsight } from "@/components/TypeMatchInsight";
 import { getDeepAssessmentQuestionCount } from "@/data/deep-assessment";
 import {
   formatScore,
@@ -169,7 +169,7 @@ export default function DashboardPage() {
 
           {basicResult.digitalType ? (
             <section className="section compact">
-              <TypeMatchInsight result={basicResult} />
+              <DigitalTypeCard result={basicResult} />
             </section>
           ) : null}
 
@@ -179,7 +179,7 @@ export default function DashboardPage() {
               <p className="muted">
                 추정 숙련도 <span className="level-badge">{basicResult.level}</span>에 맞춘 심층
                 진단({deepQuestionCount}문항, 역량별 실제 행동 문항)으로 역량을 더 자세히 점검하고, 나의{" "}
-                <strong>디지털 유형</strong>과 잘 맞는 활동까지 확인할 수 있어요.
+                <strong>디지털 유형</strong>을 더 정확하게 확인할 수 있어요.
               </p>
               <button className="button secondary" type="button" onClick={() => setTab("deep")}>
                 심층 진단 탭으로 이동 &gt;

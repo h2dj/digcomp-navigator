@@ -33,8 +33,8 @@ export function DeepAssessmentResults({ results }: DeepAssessmentResultsProps) {
                 <p>
                   숙련도 <span className="level-badge">{result.level}</span>
                   {result.digitalType ? (
-                    <Link href={`/types/${result.digitalType.primaryType}`} className="level-badge level-badge-link">
-                      {getDigitalTypeDefinition(result.digitalType.primaryType).name}
+                    <Link href={`/types/${result.digitalType.typeId}`} className="level-badge level-badge-link">
+                      {getDigitalTypeDefinition(result.digitalType.typeId).name}
                     </Link>
                   ) : null}
                 </p>

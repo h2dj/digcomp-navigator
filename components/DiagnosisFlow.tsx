@@ -15,6 +15,11 @@ const areaIcons: Record<string, string> = {
   "problem-solving": "💡",
 };
 
+type ContextBadge = {
+  label: string;
+  value: string;
+};
+
 type DiagnosisFlowProps = {
   intro: ReactNode;
   questions: AssessmentQuestionConfig[];
@@ -28,6 +33,10 @@ type DiagnosisFlowProps = {
     assessmentType: "basic" | "deep";
     deepLevel?: string;
   };
+  /** 문항 응답 화면 상단에 표시할 배지(예: 선택한 관심분야, 지금까지 답변 기준 예상 유형) */
+  contextBadges?: ContextBadge[];
+  /** 답변이 바뀔 때마다 호출된다(예: 실시간 예상 유형 계산용) */
+  onAnswersChange?: (answers: AnswerMap) => void;
 };
 
 export function DiagnosisFlow({
@@ -40,6 +49,8 @@ export function DiagnosisFlow({
   onComplete,
   resumeKey = "default",
   analytics,
+  contextBadges,
+  onAnswersChange,
 }: DiagnosisFlowProps) {
   const [phase, setPhase] = useState<Phase>("intro");
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -103,6 +114,10 @@ export function DiagnosisFlow({
     shouldResetScroll.current = false;
     resetPageScroll();
   }, [questionIndex, phase]);
+
+  useEffect(() => {
+    onAnswersChange?.(answers);
+  }, [answers, onAnswersChange]);
 
   function startAssessment() {
     onClearDraft();
@@ -195,6 +210,16 @@ export function DiagnosisFlow({
 
   return (
     <section className="diagnosis-shell" aria-live="polite">
+      {contextBadges && contextBadges.length > 0 ? (
+        <div className="diagnosis-context-badges">
+          {contextBadges.map((badge) => (
+            <span key={badge.label} className="diagnosis-context-badge">
+              <span className="diagnosis-context-badge-label">{badge.label}</span>
+              <strong>{badge.value}</strong>
+            </span>
+          ))}
+        </div>
+      ) : null}
       <article className="question-panel">
         <div className="question-header">
           <div className="question-meta">

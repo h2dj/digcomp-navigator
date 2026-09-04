@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DiagnosisFlow } from "@/components/DiagnosisFlow";
 import { InterestTagPicker } from "@/components/InterestTagPicker";
+import { getDigitalTypeDefinition, isDigitalTypeId, type DigitalTypeId } from "@/data/digital-types";
 import { defaultInterestTagId, getInterestTagLabel, isInterestTagId, type InterestTagId } from "@/data/interest-tags";
 import { personalizeQuestions } from "@/data/question-example-variants";
 import { getDefaultAssessmentConfig, type AssessmentConfig } from "@/lib/assessment-defaults";
@@ -24,6 +25,8 @@ export default function BasicDiagnosisPage() {
   const [assessmentConfig, setAssessmentConfig] = useState<AssessmentConfig>(() => getDefaultAssessmentConfig());
   const [step, setStep] = useState<FlowStep>("loading");
   const [interestTagId, setInterestTagId] = useState<InterestTagId>(defaultInterestTagId);
+  const [miniTestTypeId, setMiniTestTypeId] = useState<DigitalTypeId | null>(null);
+  const [liveAnswers, setLiveAnswers] = useState<AnswerMap>({});
 
   useEffect(() => {
     void fetch("/api/assessment-config")
@@ -48,6 +51,13 @@ export default function BasicDiagnosisPage() {
     setStep("questions");
   }, []);
 
+  useEffect(() => {
+    const savedMiniTestType = window.localStorage.getItem(storageKeys.miniTestResultType);
+    if (savedMiniTestType && isDigitalTypeId(savedMiniTestType)) {
+      setMiniTestTypeId(savedMiniTestType);
+    }
+  }, []);
+
   const handleInterestSelected = useCallback((tagId: InterestTagId) => {
     window.localStorage.setItem(storageKeys.draftInterestTag, tagId);
     setInterestTagId(tagId);
@@ -58,6 +68,28 @@ export default function BasicDiagnosisPage() {
     () => personalizeQuestions(assessmentConfig.questions, interestTagId),
     [assessmentConfig.questions, interestTagId],
   );
+
+  // 지금까지 답변한 내용을 기준으로 실시간으로 예상 유형을 계산한다(참고용, 응답이 늘수록 정확해짐).
+  const liveDigitalType = useMemo(() => {
+    if (Object.keys(liveAnswers).length === 0) return null;
+    return buildAssessmentResult(liveAnswers, { assessmentType: "basic" }).digitalType ?? null;
+  }, [liveAnswers]);
+
+  const contextBadges = useMemo(() => {
+    const badges: { label: string; value: string }[] = [];
+    if (interestTagId !== "general") {
+      badges.push({ label: "관심분야", value: getInterestTagLabel(interestTagId) });
+    }
+    if (liveDigitalType) {
+      badges.push({
+        label: "지금까지 답변 기준 예상 유형",
+        value: getDigitalTypeDefinition(liveDigitalType.typeId).name,
+      });
+    } else if (miniTestTypeId) {
+      badges.push({ label: "미니 테스트 결과", value: getDigitalTypeDefinition(miniTestTypeId).name });
+    }
+    return badges;
+  }, [interestTagId, liveDigitalType, miniTestTypeId]);
 
   const intro = useMemo(
     () => (
@@ -73,6 +105,12 @@ export default function BasicDiagnosisPage() {
         {interestTagId !== "general" ? (
           <p className="intro-copy">
             <strong>{getInterestTagLabel(interestTagId)}</strong> 분야에 와닿는 예시로 일부 문항을 다듬었어요.
+          </p>
+        ) : null}
+        {miniTestTypeId ? (
+          <p className="intro-copy">
+            미니 테스트 결과는 <strong>{getDigitalTypeDefinition(miniTestTypeId).name}</strong>였어요. 정식 진단으로
+            더 정확하게 확인해봐요.
           </p>
         ) : null}
         <div className="intro-stats">
@@ -94,7 +132,7 @@ export default function BasicDiagnosisPage() {
         </button>
       </>
     ),
-    [questions.length, interestTagId],
+    [questions.length, interestTagId, miniTestTypeId],
   );
 
   function handleComplete(answers: AnswerMap) {
@@ -127,6 +165,8 @@ export default function BasicDiagnosisPage() {
       onComplete={handleComplete}
       resumeKey="basic"
       analytics={{ assessmentType: "basic" }}
+      contextBadges={contextBadges}
+      onAnswersChange={setLiveAnswers}
     />
   );
 }

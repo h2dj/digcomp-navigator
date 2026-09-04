@@ -2,7 +2,7 @@ import type { DigcompAreaId } from "@/data/digcomp";
 
 /**
  * DigComp 3.0 5개 역량 영역을 기준으로 한 디지털 활용 유형 16종.
- * 단일 강점형 5종(영역 1개) · 시너지형 10종(영역 2개 조합, 5C2) · 입문형 1종(디지털 새싹).
+ * 단일 강점형 5종(영역 1개) · 시너지형 10종(영역 2개 조합, 5C2) · 입문형 1종(성장 새싹).
  */
 export type DigitalTypeId =
   | "detective"
@@ -51,7 +51,7 @@ export const digitalTypeDefinitions: DigitalTypeDefinition[] = [
   // ── 단일 강점형 5종 ──
   {
     id: "detective",
-    name: "디지털 탐정",
+    name: "팩트 파인더",
     category: "single",
     areas: ["information-data"],
     icon: "🔍",
@@ -60,7 +60,7 @@ export const digitalTypeDefinitions: DigitalTypeDefinition[] = [
   },
   {
     id: "artisan",
-    name: "디지털 장인",
+    name: "콘텐츠 장인",
     category: "single",
     areas: ["content-creation"],
     icon: "🛠️",
@@ -69,7 +69,7 @@ export const digitalTypeDefinitions: DigitalTypeDefinition[] = [
   },
   {
     id: "connector",
-    name: "디지털 마당발",
+    name: "네트워커",
     category: "single",
     areas: ["communication-collaboration"],
     icon: "🤝",
@@ -78,7 +78,7 @@ export const digitalTypeDefinitions: DigitalTypeDefinition[] = [
   },
   {
     id: "gatekeeper",
-    name: "디지털 문지기",
+    name: "수호자",
     category: "single",
     areas: ["safety"],
     icon: "🛡️",
@@ -87,7 +87,7 @@ export const digitalTypeDefinitions: DigitalTypeDefinition[] = [
   },
   {
     id: "solver",
-    name: "디지털 해결사",
+    name: "트러블슈터",
     category: "single",
     areas: ["problem-solving"],
     icon: "⚙️",
@@ -97,7 +97,7 @@ export const digitalTypeDefinitions: DigitalTypeDefinition[] = [
   // ── 시너지형 10종 (5C2) ──
   {
     id: "compass",
-    name: "디지털 나침반",
+    name: "정보 길잡이",
     category: "synergy",
     areas: ["information-data", "communication-collaboration"],
     icon: "🧭",
@@ -106,7 +106,7 @@ export const digitalTypeDefinitions: DigitalTypeDefinition[] = [
   },
   {
     id: "homekeeper",
-    name: "디지털 살림꾼",
+    name: "정보 살림꾼",
     category: "synergy",
     areas: ["information-data", "safety"],
     icon: "🧺",
@@ -115,7 +115,7 @@ export const digitalTypeDefinitions: DigitalTypeDefinition[] = [
   },
   {
     id: "editor",
-    name: "디지털 편집자",
+    name: "이야기 편집자",
     category: "synergy",
     areas: ["information-data", "content-creation"],
     icon: "✂️",
@@ -124,7 +124,7 @@ export const digitalTypeDefinitions: DigitalTypeDefinition[] = [
   },
   {
     id: "analyst",
-    name: "디지털 분석가",
+    name: "분석 해결사",
     category: "synergy",
     areas: ["information-data", "problem-solving"],
     icon: "📊",
@@ -133,7 +133,7 @@ export const digitalTypeDefinitions: DigitalTypeDefinition[] = [
   },
   {
     id: "influencer",
-    name: "디지털 인플루언서",
+    name: "확산 메이커",
     category: "synergy",
     areas: ["content-creation", "communication-collaboration"],
     icon: "📣",
@@ -142,7 +142,7 @@ export const digitalTypeDefinitions: DigitalTypeDefinition[] = [
   },
   {
     id: "leader",
-    name: "디지털 반장",
+    name: "커뮤니티 지킴이",
     category: "synergy",
     areas: ["communication-collaboration", "safety"],
     icon: "🎖️",
@@ -151,7 +151,7 @@ export const digitalTypeDefinitions: DigitalTypeDefinition[] = [
   },
   {
     id: "fixer",
-    name: "디지털 척척박사",
+    name: "협업 해결사",
     category: "synergy",
     areas: ["communication-collaboration", "problem-solving"],
     icon: "🎓",
@@ -160,7 +160,7 @@ export const digitalTypeDefinitions: DigitalTypeDefinition[] = [
   },
   {
     id: "allrounder",
-    name: "디지털 만능일꾼",
+    name: "만능 메이커",
     category: "synergy",
     areas: ["content-creation", "problem-solving"],
     icon: "🧰",
@@ -169,7 +169,7 @@ export const digitalTypeDefinitions: DigitalTypeDefinition[] = [
   },
   {
     id: "meticulous",
-    name: "디지털 꼼꼼이",
+    name: "책임 창작자",
     category: "synergy",
     areas: ["content-creation", "safety"],
     icon: "✅",
@@ -178,7 +178,7 @@ export const digitalTypeDefinitions: DigitalTypeDefinition[] = [
   },
   {
     id: "guardian",
-    name: "디지털 방범대장",
+    name: "위기 해결사",
     category: "synergy",
     areas: ["safety", "problem-solving"],
     icon: "🚨",
@@ -188,7 +188,7 @@ export const digitalTypeDefinitions: DigitalTypeDefinition[] = [
   // ── 입문형 1종 ──
   {
     id: "sprout",
-    name: "디지털 새싹",
+    name: "성장 새싹",
     category: "beginner",
     areas: [],
     icon: "🌱",

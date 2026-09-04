@@ -1,23 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { DigcompAreaId } from "@/data/digcomp";
 import { areaColors, getDigitalTypeDefinition, sproutColor, type DigitalTypeId } from "@/data/digital-types";
-import {
-  getAreaLabel,
-  getQ4Options,
-  q1Options,
-  q2ActionOptions,
-  q2ThoughtOptions,
-  q3Options,
-  resolveSingleType,
-  resolveSynergyType,
-  miniTestSproutTypeId,
-  type MiniTestStep,
-} from "@/data/mini-type-test";
+import { getAreaLabel, miniTestQuestions, tallyMiniTestResult } from "@/data/mini-type-test";
+import { storageKeys } from "@/lib/scoring";
 
-type Phase = "intro" | MiniTestStep | "result";
+type Phase = "intro" | "questions" | "result";
 
 const categoryLabels = {
   single: "단일 강점형",
@@ -27,50 +17,56 @@ const categoryLabels = {
 
 export function MiniTypeTest() {
   const [phase, setPhase] = useState<Phase>("intro");
-  const [primaryArea, setPrimaryArea] = useState<DigcompAreaId | null>(null);
-  const [answeredCount, setAnsweredCount] = useState(0);
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [selectedAreas, setSelectedAreas] = useState<DigcompAreaId[]>([]);
   const [resultTypeId, setResultTypeId] = useState<DigitalTypeId | null>(null);
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (phase !== "result" || !resultTypeId) return;
+    let cancelled = false;
+
+    const diagnosisUrl = typeof window !== "undefined" ? `${window.location.origin}/diagnosis` : "/diagnosis";
+
+    void import("qrcode")
+      .then((QRCode) => QRCode.toDataURL(diagnosisUrl, { margin: 1, width: 160 }))
+      .then((dataUrl) => {
+        if (!cancelled) setQrDataUrl(dataUrl);
+      })
+      .catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [phase, resultTypeId]);
 
   function start() {
-    setPhase("q1");
+    setPhase("questions");
+    setQuestionIndex(0);
+    setSelectedAreas([]);
   }
 
   function reset() {
     setPhase("intro");
-    setPrimaryArea(null);
-    setAnsweredCount(0);
+    setQuestionIndex(0);
+    setSelectedAreas([]);
     setResultTypeId(null);
+    setQrDataUrl(null);
   }
 
-  function handleQ1(index: number) {
-    setAnsweredCount(1);
-    if (index === 2) {
-      setResultTypeId(miniTestSproutTypeId);
-      setPhase("result");
+  function selectOption(areaId: DigcompAreaId) {
+    const nextSelected = [...selectedAreas, areaId];
+
+    if (questionIndex < miniTestQuestions.length - 1) {
+      setSelectedAreas(nextSelected);
+      setQuestionIndex((index) => index + 1);
       return;
     }
-    setPhase(index === 0 ? "q2-thought" : "q2-action");
-  }
 
-  function handleQ2(areaId: DigcompAreaId) {
-    setPrimaryArea(areaId);
-    setAnsweredCount(2);
-    setPhase("q3");
-  }
-
-  function handleQ3(hasSecondArea: boolean) {
-    setAnsweredCount(3);
-    if (!hasSecondArea) {
-      if (primaryArea) setResultTypeId(resolveSingleType(primaryArea));
-      setPhase("result");
-      return;
-    }
-    setPhase("q4");
-  }
-
-  function handleQ4(secondAreaId: DigcompAreaId) {
-    setAnsweredCount(4);
-    if (primaryArea) setResultTypeId(resolveSynergyType(primaryArea, secondAreaId));
+    const typeId = tallyMiniTestResult(nextSelected);
+    setResultTypeId(typeId);
+    // 개별 답변은 저장하지 않고, 최종 결과 유형만 진단 화면에 참고로 보여주기 위해 남긴다.
+    window.localStorage.setItem(storageKeys.miniTestResultType, typeId);
     setPhase("result");
   }
 
@@ -81,7 +77,7 @@ export function MiniTypeTest() {
           🧭
         </div>
         <h1>1분 미니 테스트로 미리 알아보기</h1>
-        <p className="intro-lead">3~4개의 질문에 답하면 나의 디지털 활용 유형을 가볍게 짐작해볼 수 있어요.</p>
+        <p className="intro-lead">5개의 질문에 답하면 나의 디지털 활용 유형을 가볍게 짐작해볼 수 있어요.</p>
         <p className="intro-copy">
           이름·연락처 입력 없이 바로 시작할 수 있어요. <strong>정확한 진단은 정식 진단</strong>에서 이루어지며,
           이 결과는 참고용이에요.
@@ -132,95 +128,59 @@ export function MiniTypeTest() {
           ※ 이 결과는 참고용 미니 테스트이며 정확도를 보장하지 않아요. 답변 데이터는 저장되지 않아요.
         </p>
 
-        <div className="cta-row">
-          <Link className="button" href="/diagnosis">
-            정식 진단 받아보기 &gt;
-          </Link>
-          <button type="button" className="button secondary" onClick={reset}>
-            다시 하기
-          </button>
+        <div className="mini-test-cta-block">
+          <div className="cta-row">
+            <Link className="button" href="/diagnosis">
+              정식 진단 받아보기 &gt;
+            </Link>
+            <button type="button" className="button secondary" onClick={reset}>
+              다시 하기
+            </button>
+          </div>
+          {qrDataUrl ? (
+            <figure className="mini-test-qr">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={qrDataUrl} alt="정식 진단 페이지로 이동하는 QR 코드" width={120} height={120} />
+              <figcaption className="muted">QR로 정식 진단 이어하기</figcaption>
+            </figure>
+          ) : null}
         </div>
       </>
     );
   }
 
-  const step = phase as MiniTestStep;
-  const questionMeta: Record<MiniTestStep, { question: string }> = {
-    q1: { question: "낯선 디지털 상황을 마주쳤을 때, 나는?" },
-    "q2-thought": { question: "그다음엔 주로?" },
-    "q2-action": { question: "그다음엔 주로?" },
-    q3: { question: "요즘 이것 말고도 곧잘 하는 다른 게 있나요?" },
-    q4: { question: "그중에서도 특히 자주 하게 되는 건?" },
-  };
+  const currentQuestion = miniTestQuestions[questionIndex];
 
   return (
     <section className="type-picker-page">
-      <div className="mini-test-progress" role="progressbar" aria-valuenow={answeredCount} aria-valuemin={0} aria-valuemax={4}>
-        {[0, 1, 2, 3].map((index) => (
-          <span key={index} className={`mini-test-dot${index < answeredCount ? " is-filled" : ""}`} />
+      <div
+        className="mini-test-progress"
+        role="progressbar"
+        aria-valuenow={questionIndex}
+        aria-valuemin={0}
+        aria-valuemax={miniTestQuestions.length}
+      >
+        {miniTestQuestions.map((question, index) => (
+          <span key={question.id} className={`mini-test-dot${index < questionIndex ? " is-filled" : ""}`} />
         ))}
       </div>
+      <span className="muted mini-test-counter">
+        {questionIndex + 1} / {miniTestQuestions.length}
+      </span>
 
-      <h1 className="mini-test-question">{questionMeta[step].question}</h1>
+      <h1 className="mini-test-question">{currentQuestion.question}</h1>
 
       <div className="type-picker-grid mini-test-options">
-        {step === "q1"
-          ? q1Options.map((option, index) => (
-              <button key={option.label} type="button" className="type-picker-card" onClick={() => handleQ1(index)}>
-                <strong>{option.label}</strong>
-              </button>
-            ))
-          : null}
-        {step === "q2-thought"
-          ? q2ThoughtOptions.map((option) => (
-              <button
-                key={option.label}
-                type="button"
-                className="type-picker-card"
-                onClick={() => handleQ2(option.areaId)}
-              >
-                <strong>{option.label}</strong>
-                <p className="muted">{getAreaLabel(option.areaId)}</p>
-              </button>
-            ))
-          : null}
-        {step === "q2-action"
-          ? q2ActionOptions.map((option) => (
-              <button
-                key={option.label}
-                type="button"
-                className="type-picker-card"
-                onClick={() => handleQ2(option.areaId)}
-              >
-                <strong>{option.label}</strong>
-                <p className="muted">{getAreaLabel(option.areaId)}</p>
-              </button>
-            ))
-          : null}
-        {step === "q3"
-          ? q3Options.map((option) => (
-              <button
-                key={option.label}
-                type="button"
-                className="type-picker-card"
-                onClick={() => handleQ3(option.hasSecondArea)}
-              >
-                <strong>{option.label}</strong>
-              </button>
-            ))
-          : null}
-        {step === "q4" && primaryArea
-          ? getQ4Options(primaryArea).map((option) => (
-              <button
-                key={option.label}
-                type="button"
-                className="type-picker-card"
-                onClick={() => handleQ4(option.areaId)}
-              >
-                <strong>{option.label}</strong>
-              </button>
-            ))
-          : null}
+        {currentQuestion.options.map((option) => (
+          <button
+            key={option.label}
+            type="button"
+            className="type-picker-card"
+            onClick={() => selectOption(option.areaId)}
+          >
+            <strong>{option.label}</strong>
+          </button>
+        ))}
       </div>
     </section>
   );

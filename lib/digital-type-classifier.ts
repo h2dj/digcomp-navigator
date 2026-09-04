@@ -43,7 +43,7 @@ export function classifyDigitalType(areaScores: Record<string, number>): Digital
     return {
       typeId: sproutTypeId,
       areaScores: sorted,
-      explanation: `모든 영역이 아직 기초 단계(최고 ${top1.percent}점)라 디지털 새싹으로 안내합니다.`,
+      explanation: `모든 영역이 아직 기초 단계(최고 ${top1.percent}점)라 성장 새싹으로 안내합니다.`,
     };
   }
 

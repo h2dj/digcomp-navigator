@@ -844,41 +844,77 @@ main {
 /* ── Mini type test (preview corner) ── */
 
 .mini-test-entry-card {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 0.9rem;
+  gap: 1.1rem;
   width: 100%;
   margin-top: 1.75rem;
-  border: 1px dashed var(--sage-light);
-  border-radius: 1rem;
-  background: var(--sage-pale);
-  padding: 1rem 1.25rem;
+  border: none;
+  border-radius: 1.2rem;
+  background: linear-gradient(120deg, var(--cta) 0%, #d4552a 100%);
+  box-shadow: 0 14px 34px rgba(184, 117, 58, 0.32);
+  padding: 1.4rem 1.6rem;
   text-align: left;
+  color: #fff;
   transition:
-    border-color 0.2s ease,
-    background 0.2s ease;
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .mini-test-entry-card:hover {
-  border-color: var(--sage);
-  background: #dce9d9;
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px rgba(184, 117, 58, 0.4);
+}
+
+.mini-test-entry-badge {
+  position: absolute;
+  top: -0.6rem;
+  left: 1.4rem;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--cta-dark);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  padding: 0.25rem 0.65rem;
+  box-shadow: 0 4px 10px rgba(184, 117, 58, 0.25);
 }
 
 .mini-test-entry-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.4rem;
-  height: 2.4rem;
+  width: 3rem;
+  height: 3rem;
   flex-shrink: 0;
-  border-radius: 0.8rem;
-  background: var(--panel);
-  font-size: 1.2rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.22);
+  font-size: 1.5rem;
+}
+
+.mini-test-entry-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .mini-test-entry-card strong {
   display: block;
-  color: var(--sage-dark);
+  font-size: 1.05rem;
+  color: #fff;
+}
+
+.mini-test-entry-copy span:not(.mini-test-entry-badge) {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.85rem;
+}
+
+.mini-test-entry-arrow {
+  margin-left: auto;
+  font-size: 1.3rem;
+  font-weight: 800;
+  flex-shrink: 0;
 }
 
 .mini-test-progress {
@@ -915,6 +951,73 @@ main {
   margin: 0 auto;
   text-align: center;
   font-size: 0.85rem;
+}
+
+.mini-test-counter {
+  display: block;
+  text-align: center;
+  margin: -1rem 0 1rem;
+  font-size: 0.85rem;
+}
+
+.mini-test-cta-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.mini-test-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.mini-test-qr img {
+  display: block;
+  border-radius: 0.5rem;
+}
+
+.mini-test-qr figcaption {
+  font-size: 0.8rem;
+}
+
+/* ── Diagnosis: live context badges (interest field / measured type) ── */
+
+.diagnosis-context-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  width: min(720px, calc(100% - 2rem));
+  margin: 0 auto 1rem;
+}
+
+.diagnosis-context-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  background: var(--sage-pale);
+  padding: 0.4rem 0.85rem;
+  font-size: 0.82rem;
+}
+
+.diagnosis-context-badge-label {
+  color: var(--sage);
+  font-weight: 600;
+}
+
+.diagnosis-context-badge strong {
+  color: var(--sage-dark);
 }
 
 /* ── Diagnosis intro ── */

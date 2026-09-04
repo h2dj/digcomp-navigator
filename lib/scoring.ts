@@ -92,6 +92,8 @@ export const storageKeys = {
   draftQuestionIndex: "digcomp-navigator:draft-question-index",
   draftBasicType: "digcomp-navigator:draft-basic-type",
   draftInterestTag: "digcomp-navigator:draft-interest-tag",
+  /** 미니 테스트의 최종 결과 유형(참고용). 개별 답변은 저장하지 않는다. */
+  miniTestResultType: "digcomp-navigator:mini-test-result-type",
 };
 
 export const cohortAverages: Record<DigcompAreaId, number> = {
@@ -300,6 +302,8 @@ export function saveResult(result: AssessmentResult): void {
   const nextHistory = [result, ...history].slice(0, 20);
   window.localStorage.setItem(storageKeys.latestResult, JSON.stringify(result));
   window.localStorage.setItem(storageKeys.history, JSON.stringify(nextHistory));
+  // 정식 진단을 완료했으니 미니 테스트의 참고용 힌트는 더 이상 필요 없다.
+  window.localStorage.removeItem(storageKeys.miniTestResultType);
   clearAssessmentDraft();
 }
 

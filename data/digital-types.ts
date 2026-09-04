@@ -1,327 +1,240 @@
 import type { DigcompAreaId } from "@/data/digcomp";
 
-export type DigitalTypeId = "T0" | "T1" | "T2" | "T3" | "T4" | "T5" | "T6" | "T7";
+/**
+ * DigComp 3.0 5개 역량 영역을 기준으로 한 디지털 활용 유형 16종.
+ * 단일 강점형 5종(영역 1개) · 시너지형 10종(영역 2개 조합, 5C2) · 입문형 1종(디지털 새싹).
+ */
+export type DigitalTypeId =
+  | "detective"
+  | "artisan"
+  | "connector"
+  | "gatekeeper"
+  | "solver"
+  | "compass"
+  | "homekeeper"
+  | "editor"
+  | "analyst"
+  | "influencer"
+  | "leader"
+  | "fixer"
+  | "allrounder"
+  | "meticulous"
+  | "guardian"
+  | "sprout";
 
-export type DigitalTypeActivity = {
-  icon: string;
-  title: string;
-  description: string;
-};
-
-export type DigitalTypeComplement = {
-  competencyId: string;
-  note: string;
-};
+export type DigitalTypeCategory = "single" | "synergy" | "beginner";
 
 export type DigitalTypeDefinition = {
   id: DigitalTypeId;
   name: string;
+  category: DigitalTypeCategory;
+  /** 단일 강점형은 영역 1개, 시너지형은 2개, 입문형은 빈 배열 */
+  areas: DigcompAreaId[];
+  icon: string;
   description: string;
-  tags: string[];
-  /** 유형 판별의 핵심 역량 (T0, T7 제외) */
-  core: string[];
-  /** 동점 시 보조 판단용 연관 역량 */
-  related: string[];
-  activities: DigitalTypeActivity[];
-  complement?: DigitalTypeComplement;
+  tip: string;
 };
 
+/** 영역별 고유 색상(HEX) · 배지·아이콘 배경에 사용 */
+export const areaColors: Record<DigcompAreaId, string> = {
+  "information-data": "#3B6FD6",
+  "communication-collaboration": "#E8735A",
+  "content-creation": "#8B5FBF",
+  safety: "#3E9B6F",
+  "problem-solving": "#D99A2B",
+};
+
+/** 입문형(새싹) 전용 색상 — 안전 영역과 같은 그린 계열이지만 톤을 낮췄다 */
+export const sproutColor = "#8FB89A";
+
 export const digitalTypeDefinitions: DigitalTypeDefinition[] = [
+  // ── 단일 강점형 5종 ──
   {
-    id: "T1",
-    name: "데이터 스토리텔러",
-    description:
-      "흩어진 정보와 데이터를 모아 의미 있는 이야기로 바꾸는 사람입니다. 근거 자료를 빠르게 찾고, 정리하고, 남들이 이해하기 쉬운 형태로 전달하는 데 강점이 있습니다.",
-    tags: ["#데이터시각화", "#보고서", "#근거기반", "#스토리텔링"],
-    core: ["browse-search-filter", "manage-data", "develop-content"],
-    related: ["evaluate-data", "share"],
-    activities: [
-      {
-        icon: "📊",
-        title: "연차보고서·임팩트 리포트 제작",
-        description: "사업 성과와 데이터를 근거로 한 연차보고서·임팩트 리포트를 기획하고 작성해 보세요.",
-      },
-      {
-        icon: "💰",
-        title: "모금 캠페인의 근거 데이터 구성",
-        description: "캠페인 메시지를 뒷받침할 통계와 근거 자료를 찾아 설득력을 높일 수 있습니다.",
-      },
-      {
-        icon: "📈",
-        title: "사업 성과 시각화",
-        description: "흩어진 데이터를 차트·대시보드로 정리해 의사결정에 활용할 수 있게 만들어 보세요.",
-      },
-      {
-        icon: "📝",
-        title: "정책 제안서 작성",
-        description: "조사한 근거 자료를 바탕으로 정책 제안서나 실행 가이드를 작성하는 역할이 잘 맞습니다.",
-      },
-    ],
-    complement: {
-      competencyId: "protect-data",
-      note: "데이터를 다루는 만큼 비식별화·동의 관리 역량이 함께 필요합니다.",
-    },
+    id: "detective",
+    name: "디지털 탐정",
+    category: "single",
+    areas: ["information-data"],
+    icon: "🔍",
+    description: "필요한 정보를 빠르게 찾고 진위를 잘 가려내는 사람",
+    tip: "정보를 접할 때 확인한 출처를 주변에도 알려주면 좋아요",
   },
   {
-    id: "T2",
-    name: "커뮤니티 빌더",
-    description:
-      "사람들을 온라인으로 모으고 연결하는 데 능한 유형입니다. 화상회의·커뮤니티 운영·의견 수렴을 자연스럽게 해내고, 참여자가 소외되지 않도록 챙깁니다.",
-    tags: ["#커뮤니티운영", "#참여설계", "#네트워킹", "#퍼실리테이션"],
-    core: ["interact", "citizenship", "collaborate"],
-    related: ["netiquette", "identify-gaps"],
-    activities: [
-      {
-        icon: "🚩",
-        title: "온라인 캠페인 운영",
-        description: "서명·해시태그 운동 등 조직의 온라인 캠페인을 기획하고 참여를 이끌어낼 수 있습니다.",
-      },
-      {
-        icon: "🤝",
-        title: "자원봉사자 커뮤니티 관리",
-        description: "자원봉사자·회원 커뮤니티를 온라인에서 꾸준히 운영하고 참여를 독려해 보세요.",
-      },
-      {
-        icon: "🏘️",
-        title: "주민 참여 프로그램 기획",
-        description: "지역 주민이나 수혜자의 의견을 모으는 설문·포럼·간담회를 기획하고 진행할 수 있습니다.",
-      },
-      {
-        icon: "🔗",
-        title: "다기관 협력 사업 코디네이션",
-        description: "여러 기관이 함께하는 협력 사업에서 소통과 협업을 조율하는 역할이 잘 맞습니다.",
-      },
-    ],
-    complement: {
-      competencyId: "digital-identity",
-      note: "커뮤니티가 커질수록 조직 평판 관리가 중요해집니다.",
-    },
+    id: "artisan",
+    name: "디지털 장인",
+    category: "single",
+    areas: ["content-creation"],
+    icon: "🛠️",
+    description: "사진·영상·문서 등 원하는 결과물을 뚝딱 만들어내는 사람",
+    tip: "만든 콘텐츠를 다른 사람과 나누는 공유·협업에도 도전해보세요",
   },
   {
-    id: "T3",
-    name: "콘텐츠 크리에이터",
-    description:
-      "조직의 이야기를 매력적인 콘텐츠로 만들어 퍼뜨리는 사람입니다. 카드뉴스·영상·뉴스레터 등 형식을 넘나들며, 하나의 소재를 여러 채널에 맞게 변주하는 데 강합니다.",
-    tags: ["#카드뉴스", "#스토리텔링", "#채널운영", "#캠페인"],
-    core: ["develop-content", "integrate-content", "share"],
-    related: ["copyright", "digital-identity"],
-    activities: [
-      {
-        icon: "📣",
-        title: "SNS 채널 운영",
-        description: "인스타그램·페이스북 등 조직 공식 채널의 콘텐츠 기획과 게시를 맡아보세요.",
-      },
-      {
-        icon: "💛",
-        title: "모금·인식개선 캠페인 콘텐츠 제작",
-        description: "캠페인의 핵심 메시지를 카드뉴스·영상 등으로 변주해 확산을 이끌 수 있습니다.",
-      },
-      {
-        icon: "🎙️",
-        title: "수혜자 스토리 발굴·확산",
-        description: "현장의 이야기를 콘텐츠로 만들어 후원자와 시민에게 전하는 역할이 잘 맞습니다.",
-      },
-      {
-        icon: "✉️",
-        title: "뉴스레터 운영",
-        description: "정기 뉴스레터의 기획·편집·발행을 통해 조직의 팬층을 키워보세요.",
-      },
-    ],
-    complement: {
-      competencyId: "copyright",
-      note: "콘텐츠 제작량이 많을수록 라이선스 리스크도 커집니다. 이 역량이 뒷받침되면 '빠르게 만드는 사람'에서 '안심하고 맡길 수 있는 사람'이 됩니다.",
-    },
+    id: "connector",
+    name: "디지털 마당발",
+    category: "single",
+    areas: ["communication-collaboration"],
+    icon: "🤝",
+    description: "메신저·화상회의·공유 문서로 사람들을 잘 연결하는 사람",
+    tip: "주고받는 정보의 출처와 안전성도 함께 챙기면 더 믿음직해져요",
   },
   {
-    id: "T4",
-    name: "디지털 가디언",
-    description:
-      "조직과 수혜자를 디지털 위험으로부터 지키는 유형입니다. 피싱·유출·허위정보에 민감하고, 남들이 놓치는 위험 신호를 먼저 알아챕니다.",
-    tags: ["#정보보안", "#개인정보보호", "#위험관리", "#신뢰구축"],
-    core: ["protect-devices", "protect-data", "evaluate-data"],
-    related: ["netiquette", "wellbeing"],
-    activities: [
-      {
-        icon: "🔐",
-        title: "조직 개인정보 관리 담당",
-        description: "개인정보보호책임자(CPO)를 보좌하며 조직의 개인정보 처리 현황을 관리할 수 있습니다.",
-      },
-      {
-        icon: "🛡️",
-        title: "보안 수칙·교육 운영",
-        description: "직원 대상 보안 수칙 안내와 교육을 기획하고 운영하는 역할이 잘 맞습니다.",
-      },
-      {
-        icon: "🗂️",
-        title: "후원자 DB 관리",
-        description: "후원자·수혜자 데이터베이스의 접근 권한과 보관 기준을 안전하게 관리해 보세요.",
-      },
-      {
-        icon: "🧓",
-        title: "취약계층 대상 디지털 안전 교육",
-        description: "고령층 등 취약계층에게 피싱·개인정보 보호 등 디지털 안전 수칙을 안내할 수 있습니다.",
-      },
-    ],
-    complement: {
-      competencyId: "share",
-      note: "지키는 것과 알리는 것 사이의 균형 감각이 있으면 '막기만 하는 사람'이 아니라 '안전하게 열어주는 사람'이 됩니다.",
-    },
+    id: "gatekeeper",
+    name: "디지털 문지기",
+    category: "single",
+    areas: ["safety"],
+    icon: "🛡️",
+    description: "개인정보와 계정을 안전하게 지키는 습관이 몸에 밴 사람",
+    tip: "안전 수칙을 주변에도 알려주면 공동체 전체가 더 안전해져요",
   },
   {
-    id: "T5",
-    name: "프로세스 이노베이터",
-    description:
-      "반복 업무를 보면 자동화하고 싶어지는 사람입니다. 도구를 비교·검증해 조직에 맞는 것을 골라내고, 수작업을 시스템으로 바꿔 동료들의 시간을 벌어줍니다.",
-    tags: ["#업무자동화", "#디지털전환", "#도구비교", "#프로세스개선"],
-    core: ["programming", "identify-needs", "creative-use"],
-    related: ["solve-technical", "manage-data"],
-    activities: [
-      {
-        icon: "⚙️",
-        title: "업무 자동화 프로젝트",
-        description: "반복되는 데이터 입력·정리 업무를 자동화 도구로 개선하는 프로젝트를 이끌 수 있습니다.",
-      },
-      {
-        icon: "🧪",
-        title: "신규 도구 도입 검토·파일럿",
-        description: "새 디지털 도구를 비교·검증하고 소규모 파일럿으로 실효성을 확인하는 역할이 잘 맞습니다.",
-      },
-      {
-        icon: "📋",
-        title: "행정 프로세스 개선",
-        description: "번거로운 행정·보고 절차를 디지털 도구로 단순화하는 개선안을 제안해 보세요.",
-      },
-      {
-        icon: "💡",
-        title: "소규모 단체 대상 디지털 전환 컨설팅",
-        description: "예산과 인력이 제한된 소규모 단체에 적합한 디지털 전환 방법을 안내할 수 있습니다.",
-      },
-    ],
-    complement: {
-      competencyId: "collaborate",
-      note: "혁신은 혼자 만드는 게 아니라 동료가 따라올 수 있어야 정착됩니다.",
-    },
+    id: "solver",
+    name: "디지털 해결사",
+    category: "single",
+    areas: ["problem-solving"],
+    icon: "⚙️",
+    description: "기기 오류나 낯선 서비스도 스스로 척척 풀어내는 사람",
+    tip: "해결 노하우를 기록해두면 다음번엔 더 빨리 풀 수 있어요",
+  },
+  // ── 시너지형 10종 (5C2) ──
+  {
+    id: "compass",
+    name: "디지털 나침반",
+    category: "synergy",
+    areas: ["information-data", "communication-collaboration"],
+    icon: "🧭",
+    description: "확인된 정보를 골라 주변에 잘 전달하는 사람",
+    tip: "판단 기준을 콘텐츠로 정리해 공유하면 영향력이 더 커져요",
   },
   {
-    id: "T6",
-    name: "디지털 멘토",
-    description:
-      "스스로 배우는 것을 넘어 남의 성장을 돕는 데서 보람을 느끼는 유형입니다. 기술을 어려워하는 동료·수혜자의 눈높이에 맞춰 설명하고, 건강한 디지털 사용 문화를 퍼뜨립니다.",
-    tags: ["#교육기획", "#멘토링", "#디지털격차해소", "#디지털웰빙"],
-    core: ["identify-gaps", "netiquette", "wellbeing"],
-    related: ["interact", "environment"],
-    activities: [
-      {
-        icon: "🎓",
-        title: "사내 디지털 교육 운영",
-        description: "동료들의 눈높이에 맞춘 디지털 도구 교육을 기획하고 진행할 수 있습니다.",
-      },
-      {
-        icon: "🧓",
-        title: "고령층·취약계층 디지털 격차 해소 사업",
-        description: "디지털 기기 사용을 어려워하는 대상에게 친절하게 안내하는 사업이 잘 맞습니다.",
-      },
-      {
-        icon: "👋",
-        title: "신입 직원 온보딩",
-        description: "새로 합류한 동료가 조직의 디지털 도구에 빠르게 적응하도록 도울 수 있습니다.",
-      },
-      {
-        icon: "🌿",
-        title: "디지털 웰빙 캠페인",
-        description: "건강한 디지털 사용 습관을 제안하고 조직 문화로 퍼뜨리는 역할을 해보세요.",
-      },
-    ],
-    complement: {
-      competencyId: "manage-data",
-      note: "교육 성과를 데이터로 기록·증명하면 사업 확장의 근거가 됩니다.",
-    },
+    id: "homekeeper",
+    name: "디지털 살림꾼",
+    category: "synergy",
+    areas: ["information-data", "safety"],
+    icon: "🧺",
+    description: "정보를 정리하면서 개인정보도 안전하게 관리하는 사람",
+    tip: "정리한 정보를 가족·동료와 나눠보세요",
+  },
+  {
+    id: "editor",
+    name: "디지털 편집자",
+    category: "synergy",
+    areas: ["information-data", "content-creation"],
+    icon: "✂️",
+    description: "자료를 모아 이해하기 쉬운 콘텐츠로 만들어내는 사람",
+    tip: "만든 콘텐츠를 더 많은 사람과 나누는 소통도 시도해보세요",
+  },
+  {
+    id: "analyst",
+    name: "디지털 분석가",
+    category: "synergy",
+    areas: ["information-data", "problem-solving"],
+    icon: "📊",
+    description: "데이터를 바탕으로 문제의 원인을 찾아내는 사람",
+    tip: "분석 결과를 쉽게 전달하는 연습도 해보세요",
+  },
+  {
+    id: "influencer",
+    name: "디지털 인플루언서",
+    category: "synergy",
+    areas: ["content-creation", "communication-collaboration"],
+    icon: "📣",
+    description: "콘텐츠를 만들어 공유하고 반응을 이끌어내는 사람",
+    tip: "공유하는 정보의 출처를 한 번 더 확인하면 신뢰도가 올라가요",
+  },
+  {
+    id: "leader",
+    name: "디지털 반장",
+    category: "synergy",
+    areas: ["communication-collaboration", "safety"],
+    icon: "🎖️",
+    description: "온라인 모임이나 단체방을 안전하게 이끌어가는 사람",
+    tip: "모임원들에게 안전 수칙을 쉽게 안내해보세요",
+  },
+  {
+    id: "fixer",
+    name: "디지털 척척박사",
+    category: "synergy",
+    areas: ["communication-collaboration", "problem-solving"],
+    icon: "🎓",
+    description: "주변의 디지털 고민을 듣고 함께 해결해주는 사람",
+    tip: "자주 받는 질문을 정리해두면 더 많은 사람을 도울 수 있어요",
+  },
+  {
+    id: "allrounder",
+    name: "디지털 만능일꾼",
+    category: "synergy",
+    areas: ["content-creation", "problem-solving"],
+    icon: "🧰",
+    description: "필요한 도구나 자동화를 직접 만들어 문제를 해결하는 사람",
+    tip: "만든 결과물을 나누면 더 많은 사람에게 도움이 돼요",
+  },
+  {
+    id: "meticulous",
+    name: "디지털 꼼꼼이",
+    category: "synergy",
+    areas: ["content-creation", "safety"],
+    icon: "✅",
+    description: "콘텐츠를 만들 때 저작권·개인정보까지 꼼꼼히 챙기는 사람",
+    tip: "이 체크포인트를 체크리스트로 만들어 공유해보세요",
+  },
+  {
+    id: "guardian",
+    name: "디지털 방범대장",
+    category: "synergy",
+    areas: ["safety", "problem-solving"],
+    icon: "🚨",
+    description: "보안 문제나 오류를 스스로 진단하고 해결하는 사람",
+    tip: "겪은 문제와 해결법을 기록해두면 다른 사람도 도울 수 있어요",
+  },
+  // ── 입문형 1종 ──
+  {
+    id: "sprout",
+    name: "디지털 새싹",
+    category: "beginner",
+    areas: [],
+    icon: "🌱",
+    description: "이제 막 디지털 활용을 시작해 하나씩 배워가는 사람",
+    tip: "관심 있는 영역 하나를 골라 작은 것부터 차근차근 익혀보세요",
   },
 ];
 
-export const digitalTypeT7: DigitalTypeDefinition = {
-  id: "T7",
-  name: "디지털 전략가",
-  description:
-    "한 분야의 스페셜리스트라기보다 조직 전체를 보는 제너럴리스트입니다. 기술·사람·프로세스를 함께 고려해 조직의 디지털 방향을 설계할 수 있습니다.",
-  tags: ["#디지털전환전략", "#거버넌스", "#의사결정", "#제너럴리스트"],
-  core: [],
-  related: [],
-  activities: [
-    {
-      icon: "🗺️",
-      title: "조직 디지털 전환 로드맵 수립",
-      description: "조직의 비전과 사업 목표에 맞춘 단계별 디지털 전환 계획을 세울 수 있습니다.",
-    },
-    {
-      icon: "💼",
-      title: "IT 예산·투자 의사결정",
-      description: "제한된 예산 안에서 어떤 도구·시스템에 투자할지 우선순위를 정하는 역할이 잘 맞습니다.",
-    },
-    {
-      icon: "📜",
-      title: "디지털 관련 정책·거버넌스 수립",
-      description: "개인정보·보안·콘텐츠 등 조직 전반의 디지털 정책을 설계하고 운영할 수 있습니다.",
-    },
-    {
-      icon: "🌐",
-      title: "섹터 차원의 네트워크·연구 활동",
-      description: "비영리 섹터의 디지털 전환 사례를 조사하고 다른 조직과 지식을 나누는 활동을 해보세요.",
-    },
-  ],
-  complement: {
-    competencyId: "",
-    note: "전략가일수록 한두 개의 '직접 잘하는 것'이 있어야 현장 설득력이 생깁니다.",
-  },
-};
-
-export const digitalTypeT0: DigitalTypeDefinition = {
-  id: "T0",
-  name: "성장 탐색가",
-  description: "아직 뚜렷한 강점 조합보다는 여러 역량을 고르게 탐색하고 있는 단계입니다. 기초를 다지며 나만의 강점을 찾아가고 있어요.",
-  tags: ["#성장중", "#탐색단계"],
-  core: [],
-  related: [],
-  activities: [
-    {
-      icon: "🌱",
-      title: "관심 있는 영역부터 하나씩 깊게 진단해보기",
-      description: "5개 영역 중 가장 끌리는 영역을 골라 심층 진단으로 구체적인 강점을 확인해 보세요.",
-    },
-    {
-      icon: "📚",
-      title: "가장 낮은 영역의 기초 학습 자료부터 시작",
-      description: "부담 없는 기초 학습으로 시작하면 다음 진단에서 뚜렷한 유형이 드러날 수 있어요.",
-    },
-  ],
-};
-
-export function getDigitalTypeDefinition(id: DigitalTypeId): DigitalTypeDefinition {
-  if (id === "T0") return digitalTypeT0;
-  if (id === "T7") return digitalTypeT7;
-  const found = digitalTypeDefinitions.find((type) => type.id === id);
-  if (!found) throw new Error(`알 수 없는 디지털 유형 ID입니다: ${id}`);
-  return found;
-}
-
-export const allDigitalTypeIds: DigitalTypeId[] = ["T0", "T1", "T2", "T3", "T4", "T5", "T6", "T7"];
+export const allDigitalTypeIds: DigitalTypeId[] = digitalTypeDefinitions.map((type) => type.id);
 
 export function isDigitalTypeId(value: string): value is DigitalTypeId {
   return (allDigitalTypeIds as string[]).includes(value);
 }
 
-/** 유형 판별 튜닝 파라미터 */
-export const digitalTypeParams = {
-  ABS_THRESHOLD: 3.5,
-  REL_GAP: 0.4,
-  MIN_CORE: 3.0,
-  DUAL_TYPE_GAP: 0.15,
-  STRATEGIST_AREA_THRESHOLD: 3.8,
-  STRATEGIST_AREA_COUNT: 4,
-  STRATEGIST_AREA_FLOOR: 3.0,
-  STRATEGIST_MEAN: 3.8,
-  FALLBACK_CASE_A_MEAN: 2.5,
-  FLAT_STDEV: 0.3,
-} as const;
+export function getDigitalTypeDefinition(id: DigitalTypeId): DigitalTypeDefinition {
+  const found = digitalTypeDefinitions.find((type) => type.id === id);
+  if (!found) throw new Error(`알 수 없는 디지털 유형 ID입니다: ${id}`);
+  return found;
+}
 
-export type DigitalTypeAreaKey = DigcompAreaId;
+export function getSingleTypeId(areaId: DigcompAreaId): DigitalTypeId {
+  const found = digitalTypeDefinitions.find((type) => type.category === "single" && type.areas[0] === areaId);
+  if (!found) throw new Error(`단일 강점형을 찾을 수 없습니다: ${areaId}`);
+  return found.id;
+}
+
+export function getSynergyTypeId(areaA: DigcompAreaId, areaB: DigcompAreaId): DigitalTypeId {
+  const found = digitalTypeDefinitions.find(
+    (type) => type.category === "synergy" && type.areas.includes(areaA) && type.areas.includes(areaB),
+  );
+  if (!found) throw new Error(`시너지형을 찾을 수 없습니다: ${areaA} + ${areaB}`);
+  return found.id;
+}
+
+export const sproutTypeId: DigitalTypeId = "sprout";
+
+/** 판정 기준 (영역 점수는 0~100점 환산 기준) */
+export const digitalTypeParams = {
+  /** 단일 강점형: 최고점 영역이 이 값 이상 */
+  SINGLE_MIN: 70,
+  /** 단일 강점형: 최고점과 차상위 영역의 점수 차이가 이 값 이상 */
+  SINGLE_GAP: 15,
+  /** 시너지형: 상위 2개 영역이 모두 이 값 이상 */
+  SYNERGY_MIN: 65,
+  /** 시너지형: 상위 2개 영역의 점수 차이가 이 값 이내 */
+  SYNERGY_GAP: 10,
+  /** 입문형: 모든 영역이 이 값 미만이면 새싹 */
+  BEGINNER_MAX: 65,
+} as const;

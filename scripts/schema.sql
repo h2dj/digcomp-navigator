@@ -32,3 +32,12 @@ CREATE TABLE IF NOT EXISTS assessment_config (
   config JSONB NOT NULL,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS academy_interests (
+  id TEXT PRIMARY KEY,
+  email TEXT NOT NULL,
+  interests JSONB NOT NULL DEFAULT '[]',
+  note TEXT,
+  source TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

@@ -7,6 +7,7 @@ import { DigitalTypeCard } from "@/components/DigitalTypeCard";
 import { ResultHighlights } from "@/components/ResultHighlights";
 import { ResultSharePanel } from "@/components/ResultSharePanel";
 import { getDeepAssessmentQuestionCount } from "@/data/deep-assessment";
+import { trackAcademyCtaClick } from "@/lib/analytics";
 import { getLatestResult, formatScore, clearAssessmentDraft, getAssessmentType, type AssessmentResult } from "@/lib/scoring";
 import { useUserDataRefresh } from "@/lib/use-user-data-refresh";
 
@@ -67,6 +68,17 @@ export default function ResultsPage() {
           <DigitalTypeCard result={result} />
         </section>
       ) : null}
+
+      <section className="section compact">
+        <article className="card academy-teaser-card">
+          <span className="eyebrow">(가칭) 디지털 배움대학</span>
+          <h2>강점을 실제 활동에 써볼 배움을 찾아보세요</h2>
+          <p>AI·데이터·콘텐츠·협업·디지털 안전·시민기술까지, 내 활동에 필요한 디지털을 직접 배우고 실험해요.</p>
+          <Link className="button" href="/baeumdaehak#register" onClick={() => trackAcademyCtaClick("results_teaser")}>
+            나에게 맞는 수업 추천받기
+          </Link>
+        </article>
+      </section>
 
       <section className="section compact">
         <div className="score-hero">

@@ -41,3 +41,18 @@ export function trackProfileSave(params: {
     organization_type: params.organizationType,
   });
 }
+
+/** (가칭) 디지털 배움대학 소개 페이지 진입 */
+export function trackAcademyView(source?: string): void {
+  trackEvent("academy_view", source ? { source } : undefined);
+}
+
+/** 배움대학 페이지 내 CTA 클릭 */
+export function trackAcademyCtaClick(ctaId: string): void {
+  trackEvent("academy_cta_click", { cta_id: ctaId });
+}
+
+/** 관심 등록 폼 제출 완료 */
+export function trackAcademyFormSubmit(interestCount: number): void {
+  trackEvent("academy_form_submit", { interest_count: interestCount });
+}

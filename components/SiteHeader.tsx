@@ -9,7 +9,7 @@ const navigation = [
   { href: "/diagnosis", label: "기본 진단" },
   { href: "/stats", label: "공개 통계" },
   { href: "/dashboard", label: "나의 대시보드" },
-  { href: "/guide", label: "개발 가이드" },
+  { href: "/baeumdaehak", label: "(가칭) 디지털 배움대학" },
 ];
 
 export function SiteHeader() {

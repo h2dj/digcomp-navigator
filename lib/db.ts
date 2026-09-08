@@ -57,6 +57,16 @@ export async function ensureSchema(): Promise<void> {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS academy_interests (
+      id TEXT PRIMARY KEY,
+      email TEXT NOT NULL,
+      interests JSONB NOT NULL DEFAULT '[]',
+      note TEXT,
+      source TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `;
 
   schemaReady = true;
   await ensureBootstrapAdmin();

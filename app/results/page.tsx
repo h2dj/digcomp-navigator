@@ -81,6 +81,17 @@ export default function ResultsPage() {
       </section>
 
       <section className="section compact">
+        <article className="card quiz-teaser-card">
+          <span className="eyebrow">OX 퀴즈</span>
+          <h2>재미로 보는 퀴즈도 있어요</h2>
+          <p>AI·환경·보안 같은 디지털 이슈를 O/X 문항으로 가볍게 알아가 보세요.</p>
+          <Link className="button secondary" href="/quiz">
+            재미로 보는 퀴즈 &gt;
+          </Link>
+        </article>
+      </section>
+
+      <section className="section compact">
         <div className="score-hero">
           <article className="card">
             <span className="eyebrow">{isDeep ? "심층 진단" : "기본 진단"}</span>

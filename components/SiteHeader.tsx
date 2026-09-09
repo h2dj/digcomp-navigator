@@ -8,6 +8,7 @@ const navigation = [
   { href: "/digcomp", label: "DigComp 소개" },
   { href: "/diagnosis", label: "기본 진단" },
   { href: "/stats", label: "공개 통계" },
+  { href: "/quiz", label: "OX 퀴즈" },
   { href: "/dashboard", label: "나의 대시보드" },
   { href: "/baeumdaehak", label: "(가칭) 디지털 배움대학" },
 ];

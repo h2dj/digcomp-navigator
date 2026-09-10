@@ -49,12 +49,22 @@ export const proficiencyLevels = [
   },
 ] as const;
 
+/** 심층 진단(역량별 실제 행동 문항)에서 사용하는 5점 응답 척도 */
 export const responseScale = [
   { value: 1, label: "아직 어려워요", helper: "" },
   { value: 2, label: "들어는 봤어요", helper: "" },
   { value: 3, label: "가끔 해봤어요", helper: "" },
   { value: 4, label: "할 수 있어요", helper: "" },
   { value: 5, label: "자신 있어요", helper: "" },
+] as const;
+
+/** 기본 진단에서 사용하는 5점 응답 척도 */
+export const basicResponseScale = [
+  { value: 1, label: "전혀 할 수 없어요", helper: "" },
+  { value: 2, label: "도와주면 할 수 있어요", helper: "" },
+  { value: 3, label: "기본적인 건 알아서 해요", helper: "" },
+  { value: 4, label: "배우면 더 잘 할 것 같아요", helper: "" },
+  { value: 5, label: "동료에게 알려줄 수 있어요", helper: "" },
 ] as const;
 
 export const digcompAreas: DigcompArea[] = [

@@ -65,12 +65,6 @@ export function DigitalTypeCard({ result }: DigitalTypeCardProps) {
         </ol>
       </section>
 
-      <section className="card type-complement-card">
-        <span className="eyebrow">실천 팁</span>
-        <h2>{type.name}에게 추천해요</h2>
-        <p>{type.tip}</p>
-      </section>
-
       <DigitalTypePrescriptionCard typeId={type.id} typeName={type.name} />
     </>
   );

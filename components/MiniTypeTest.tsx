@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { DigcompAreaId } from "@/data/digcomp";
 import { areaColors, getDigitalTypeDefinition, sproutColor, type DigitalTypeId } from "@/data/digital-types";
+import { DigitalTypePrescriptionCard } from "@/components/DigitalTypePrescriptionCard";
 import {
   classifyMiniTest,
   getAreaAbilityDescription,
@@ -254,6 +255,8 @@ export function MiniTypeTest() {
           <h2>{type.name}에게 추천해요</h2>
           <p>{type.tip}</p>
         </div>
+
+        <DigitalTypePrescriptionCard typeId={type.id} typeName={type.name} />
 
         <p className="muted mini-test-disclaimer">
           ※ 이 결과는 참고용 미니 테스트이며 정확도를 보장하지 않아요. 답변 데이터는 저장되지 않아요.

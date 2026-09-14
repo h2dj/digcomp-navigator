@@ -228,8 +228,8 @@ export function MiniTypeTest() {
     const heroColor = type.areas[0] ? areaColors[type.areas[0]] : sproutColor;
 
     return (
-      <>
-        <section className="type-hero" style={{ background: `linear-gradient(135deg, ${heroColor} 0%, #1f2f3a 130%)` }}>
+      <section className="section compact">
+        <div className="type-hero" style={{ background: `linear-gradient(135deg, ${heroColor} 0%, #1f2f3a 130%)` }}>
           <span className="type-hero-label">미니 테스트 결과 · {categoryLabels[type.category]}</span>
           <h2 className="type-hero-name">
             <span aria-hidden="true">{type.icon}</span> {type.name}
@@ -247,13 +247,13 @@ export function MiniTypeTest() {
               <span className="type-tag">5개 영역 모두 성장 중</span>
             )}
           </div>
-        </section>
+        </div>
 
-        <section className="card type-complement-card">
+        <div className="card type-complement-card">
           <span className="eyebrow">실천 팁</span>
           <h2>{type.name}에게 추천해요</h2>
           <p>{type.tip}</p>
-        </section>
+        </div>
 
         <p className="muted mini-test-disclaimer">
           ※ 이 결과는 참고용 미니 테스트이며 정확도를 보장하지 않아요. 답변 데이터는 저장되지 않아요.
@@ -276,7 +276,7 @@ export function MiniTypeTest() {
             </figure>
           ) : null}
         </div>
-      </>
+      </section>
     );
   }
 

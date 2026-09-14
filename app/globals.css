@@ -806,6 +806,7 @@ main {
 
 .type-complement-card {
   border-left: 4px solid var(--cta);
+  margin-bottom: 1.5rem;
 }
 
 /* ── Digital type picker (basic diagnosis intro step) ── */

@@ -2,8 +2,8 @@ import type { DigcompAreaId } from "@/data/digcomp";
 import { getSingleTypeId, getSynergyTypeId, sproutTypeId, type DigitalTypeId } from "@/data/digital-types";
 
 /**
- * 정식 진단 전 미리보기용 미니 테스트 — 답변 집계 방식.
- * 5개 문항에 모두 답한 뒤 영역별 선택 횟수를 집계해 결과를 정한다.
+ * 정식 진단 전 미리보기용 미니 테스트 — 서울공익활동박람회 부스 "나의 디지털 체크카드"와
+ * 동일한 문항·판정 규칙을 온라인으로 그대로 구현한 것.
  * 참고용 미니 테스트이며, 개별 답변은 저장하지 않고 정식 진단에도 반영하지 않는다.
  */
 
@@ -19,15 +19,28 @@ export type MiniTestQuestion = {
 };
 
 const areaLabels: Record<DigcompAreaId, string> = {
-  "information-data": "정보문해력",
-  "communication-collaboration": "소통과 협업",
-  "content-creation": "콘텐츠 제작",
+  "information-data": "정보",
+  "communication-collaboration": "연결",
+  "content-creation": "창작",
   safety: "안전",
-  "problem-solving": "문제해결",
+  "problem-solving": "해결",
 };
 
 export function getAreaLabel(areaId: DigcompAreaId): string {
   return areaLabels[areaId];
+}
+
+/** 마지막 한 판(동점 타이브레이크)에서 보여주는 영역별 능력 한 줄 설명 */
+const areaAbilityDescriptions: Record<DigcompAreaId, string> = {
+  "information-data": "무엇이든 제대로 찾아내는 능력",
+  "communication-collaboration": "누구와도 함께 일하는 능력",
+  "content-creation": "생각한 것을 멋지게 만들어내는 능력",
+  safety: "위험을 미리 알아채고 피하는 능력",
+  "problem-solving": "어떤 디지털 문제든 해결하는 능력",
+};
+
+export function getAreaAbilityDescription(areaId: DigcompAreaId): string {
+  return areaAbilityDescriptions[areaId];
 }
 
 const areaOrder: DigcompAreaId[] = [
@@ -38,87 +51,172 @@ const areaOrder: DigcompAreaId[] = [
   "problem-solving",
 ];
 
+/** START — 성장 새싹 후보 여부만 표시하고, Q1부터는 동일하게 계속 진행한다. */
+export type MiniTestGateAnswer = "A" | "B" | "C" | "D";
+
+export const miniTestGateQuestion = {
+  question: "디지털 도구를 사용할 때 나는?",
+  options: [
+    { key: "A" as const, label: "대체로 어렵지 않다" },
+    { key: "B" as const, label: "익숙한 것은 괜찮지만 새로운 것은 조금 어렵다" },
+    { key: "C" as const, label: "누가 알려주지 않으면 왜 어렵다" },
+    { key: "D" as const, label: "디지털 기기나 서비스 사용 자체가 부담스럽다" },
+  ],
+};
+
+export function isBeginnerCandidateGateAnswer(answer: MiniTestGateAnswer): boolean {
+  return answer === "C" || answer === "D";
+}
+
 export const miniTestQuestions: MiniTestQuestion[] = [
   {
     id: "q1",
-    question: "새로운 앱이나 서비스를 처음 써야 할 때, 나는?",
+    question: "필요한 디지털 정보가 생겼을 때 나는?",
     options: [
-      { label: "후기나 정보를 먼저 찾아본다", areaId: "information-data" },
-      { label: "주변 사람에게 물어보거나 같이 써본다", areaId: "communication-collaboration" },
-      { label: "써보면서 나만의 사용법을 정리해본다", areaId: "content-creation" },
-      { label: "개인정보 설정부터 확인한다", areaId: "safety" },
-      { label: "일단 이것저것 눌러보며 익힌다", areaId: "problem-solving" },
+      { label: "검색하고 여러 출처를 비교한다", areaId: "information-data" },
+      { label: "잘 아는 사람이나 커뮤니티에 물어본다", areaId: "communication-collaboration" },
+      { label: "찾은 내용을 내가 보기 좋게 다시 정리한다", areaId: "content-creation" },
+      { label: "출처와 개인정보/보안 위험부터 확인한다", areaId: "safety" },
+      { label: "일단 필요한 도구를 써보며 답을 찾아간다", areaId: "problem-solving" },
     ],
   },
   {
     id: "q2",
-    question: "온라인에서 헷갈리는 정보를 봤을 때, 나는?",
+    question: "여러 사람이 함께 일을 시작한다면?",
     options: [
-      { label: "다른 자료와 비교하며 사실을 확인한다", areaId: "information-data" },
-      { label: "아는 사람에게 물어보고 의견을 나눈다", areaId: "communication-collaboration" },
-      { label: "요약하거나 정리해서 기록해둔다", areaId: "content-creation" },
-      { label: "출처가 불분명하면 일단 넘긴다", areaId: "safety" },
-      { label: "검색 방법을 바꿔가며 직접 찾아본다", areaId: "problem-solving" },
+      { label: "단체방/공동문서 등 함께 일할 공간부터 만든다", areaId: "communication-collaboration" },
+      { label: "일의 내용을 한눈에 볼 수 있는 자료부터 만든다", areaId: "content-creation" },
+      { label: "어떤 도구와 방식이 가장 효율적인지 먼저 정한다", areaId: "problem-solving" },
+      { label: "필요한 자료와 참고 사례부터 찾아본다", areaId: "information-data" },
+      { label: "공유 범위와 계정/자료 접근 권한부터 확인한다", areaId: "safety" },
     ],
   },
   {
     id: "q3",
-    question: "사진이나 문서를 정리할 때, 나는?",
+    question: "처음 보는 앱이나 AI 도구를 써야 한다면?",
     options: [
-      { label: "필요한 자료를 잘 찾아서 모은다", areaId: "information-data" },
-      { label: "다른 사람과 공유 폴더로 함께 정리한다", areaId: "communication-collaboration" },
-      { label: "보기 좋게 편집하고 꾸민다", areaId: "content-creation" },
-      { label: "백업과 비밀번호 설정을 꼭 챙긴다", areaId: "safety" },
-      { label: "자동으로 정리되는 방법을 찾아 적용한다", areaId: "problem-solving" },
+      { label: "직접 눌러보고 시행착오를 겪으며 익힌다", areaId: "problem-solving" },
+      { label: "사용법/후기/비교 자료를 먼저 찾아본다", areaId: "information-data" },
+      { label: "어떤 정보가 수집되는지와 위험 요소를 확인한다", areaId: "safety" },
+      { label: "써본 사람에게 팁을 묻거나 함께 해본다", areaId: "communication-collaboration" },
+      { label: "바로 작은 결과물을 하나 만들어본다", areaId: "content-creation" },
     ],
   },
   {
     id: "q4",
-    question: "온라인 모임이나 단체 대화방에서, 나는?",
+    question: "온라인에 올릴 자료를 거의 다 만들었습니다. 마지막으로?",
     options: [
-      { label: "필요한 정보를 찾아서 공유한다", areaId: "information-data" },
-      { label: "대화를 이끌고 사람들을 챙긴다", areaId: "communication-collaboration" },
-      { label: "재미있는 콘텐츠를 만들어 올린다", areaId: "content-creation" },
-      { label: "수상한 링크를 조심하라고 알린다", areaId: "safety" },
-      { label: "오류가 생기면 나서서 해결한다", areaId: "problem-solving" },
+      { label: "표현과 디자인을 한 번 더 다듬는다", areaId: "content-creation" },
+      { label: "저작권/개인정보/공개 범위를 점검한다", areaId: "safety" },
+      { label: "내용과 수치, 출처가 정확한지 확인한다", areaId: "information-data" },
+      { label: "다른 사람에게 보여주고 의견을 받는다", areaId: "communication-collaboration" },
+      { label: "더 간단하고 효율적인 제작 방법이 없었는지 돌아본다", areaId: "problem-solving" },
     ],
   },
   {
     id: "q5",
-    question: "기기나 프로그램에 문제가 생겼을 때, 나는?",
+    question: "컴퓨터나 스마트폰에서 문제가 생겼습니다. 나는?",
     options: [
-      { label: "원인을 검색해서 찾아본다", areaId: "information-data" },
-      { label: "잘 아는 사람에게 물어본다", areaId: "communication-collaboration" },
-      { label: "화면을 캡처해 기록해둔다", areaId: "content-creation" },
-      { label: "혹시 모를 데이터 유출을 걱정한다", areaId: "safety" },
-      { label: "이것저것 눌러보며 스스로 고쳐본다", areaId: "problem-solving" },
+      { label: "보안 문제나 계정 이상이 아닌지 먼저 살핀다", areaId: "safety" },
+      { label: "설정과 기능을 살펴보며 직접 해결해본다", areaId: "problem-solving" },
+      { label: "잘 아는 사람에게 상황을 설명하고 도움을 구한다", areaId: "communication-collaboration" },
+      { label: "오류 문구와 증상을 검색해 해결 사례를 찾는다", areaId: "information-data" },
+      { label: "필요하면 다른 도구로 우회해 결과물을 완성한다", areaId: "content-creation" },
+    ],
+  },
+  {
+    id: "q6",
+    question: "주변 사람들이 나에게 디지털 관련 부탁을 한다면 가장 그럴듯한 것은?",
+    options: [
+      { label: "“이거 보기 좋게 좀 만들어줘.”", areaId: "content-creation" },
+      { label: "“이 정보가 맞는지 좀 찾아봐줄 수 있어?”", areaId: "information-data" },
+      { label: "“이거 왜 안 되는지 좀 봐주라.”", areaId: "problem-solving" },
+      { label: "“이 링크나 서비스, 안전한지 확인 좀 해줘.”", areaId: "safety" },
+      { label: "“사람들에게 이것 좀 잘 알려줄래?”", areaId: "communication-collaboration" },
     ],
   },
 ];
 
 export const miniTestSproutTypeId = sproutTypeId;
 
+export type MiniTestClassification =
+  | { kind: "result"; typeId: DigitalTypeId }
+  | { kind: "tiebreak"; candidates: DigcompAreaId[]; slotsNeeded: number; fixedArea: DigcompAreaId | null };
+
+type ScoreTier = { score: number; areas: DigcompAreaId[] };
+
+function buildTiers(counts: Map<DigcompAreaId, number>): ScoreTier[] {
+  const sorted = [...areaOrder].sort((a, b) => (counts.get(b) ?? 0) - (counts.get(a) ?? 0));
+  const tiers: ScoreTier[] = [];
+
+  for (const area of sorted) {
+    const score = counts.get(area) ?? 0;
+    const currentTier = tiers[tiers.length - 1];
+    if (currentTier && currentTier.score === score) {
+      currentTier.areas.push(area);
+    } else {
+      tiers.push({ score, areas: [area] });
+    }
+  }
+
+  return tiers;
+}
+
 /**
- * 영역별 선택 횟수를 집계해 유형을 판별한다.
- * - 1위 영역이 1점 이하(고르게 분산)면 → 새싹
- * - 1위 영역이 3점 이상이면 → 단일 강점형
- * - 1위 · 2위가 둘 다 2점으로 동점이면 → 시너지형
- * - 그 외(1위 2점, 2위 1점 이하 등)에는 → 1위 영역의 단일 강점형
+ * 6개 문항 선택 결과와 START 응답(성장 새싹 후보 여부)을 바탕으로 유형을 판별한다.
+ * - 성장 새싹 후보(START에서 C/D)였고 최고점이 2점 이하 → 성장 새싹
+ * - 한 영역이 4점 이상이고 2위보다 2점 이상 높다 → 그 영역의 단일 강점형
+ * - 그 외에는 점수가 가장 높은 두 영역의 시너지형
+ * - 2위(또는 1위) 자리에 동점이 있어 상위 두 영역을 하나로 정할 수 없으면
+ *   "마지막 한 판" 타이브레이크가 필요하다는 결과를 반환한다.
  */
-export function tallyMiniTestResult(selectedAreaIds: DigcompAreaId[]): DigitalTypeId {
+export function classifyMiniTest(
+  selectedAreaIds: DigcompAreaId[],
+  isBeginnerCandidate: boolean,
+): MiniTestClassification {
   const counts = new Map<DigcompAreaId, number>(areaOrder.map((areaId) => [areaId, 0]));
   for (const areaId of selectedAreaIds) {
     counts.set(areaId, (counts.get(areaId) ?? 0) + 1);
   }
 
-  const sorted = [...areaOrder].sort((a, b) => (counts.get(b) ?? 0) - (counts.get(a) ?? 0));
-  const top1 = sorted[0];
-  const top2 = sorted[1];
-  const top1Count = counts.get(top1) ?? 0;
-  const top2Count = counts.get(top2) ?? 0;
+  const maxScore = Math.max(...areaOrder.map((areaId) => counts.get(areaId) ?? 0));
+  if (isBeginnerCandidate && maxScore <= 2) {
+    return { kind: "result", typeId: miniTestSproutTypeId };
+  }
 
-  if (top1Count <= 1) return miniTestSproutTypeId;
-  if (top1Count >= 3) return getSingleTypeId(top1);
-  if (top2Count === 2) return getSynergyTypeId(top1, top2);
-  return getSingleTypeId(top1);
+  const tiers = buildTiers(counts);
+  const topTier = tiers[0];
+
+  if (topTier.areas.length === 1) {
+    const top1 = topTier.areas[0];
+    const secondScore = tiers[1]?.score ?? 0;
+
+    if (topTier.score >= 4 && topTier.score - secondScore >= 2) {
+      return { kind: "result", typeId: getSingleTypeId(top1) };
+    }
+
+    const secondTier = tiers[1];
+    if (!secondTier || secondTier.areas.length === 0) {
+      return { kind: "result", typeId: getSingleTypeId(top1) };
+    }
+    if (secondTier.areas.length === 1) {
+      return { kind: "result", typeId: getSynergyTypeId(top1, secondTier.areas[0]) };
+    }
+    return { kind: "tiebreak", candidates: secondTier.areas, slotsNeeded: 1, fixedArea: top1 };
+  }
+
+  if (topTier.areas.length === 2) {
+    return { kind: "result", typeId: getSynergyTypeId(topTier.areas[0], topTier.areas[1]) };
+  }
+
+  return { kind: "tiebreak", candidates: topTier.areas, slotsNeeded: 2, fixedArea: null };
+}
+
+/** 타이브레이크에서 사용자가 고른 영역(들)로 최종 유형을 확정한다. */
+export function resolveMiniTestTiebreak(fixedArea: DigcompAreaId | null, picked: DigcompAreaId[]): DigitalTypeId {
+  const areas = fixedArea ? [fixedArea, ...picked] : picked;
+  if (areas.length < 2) {
+    throw new Error("타이브레이크 결과가 부족합니다.");
+  }
+  return getSynergyTypeId(areas[0], areas[1]);
 }

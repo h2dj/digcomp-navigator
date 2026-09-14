@@ -31,7 +31,7 @@ export default function HomePage() {
               🧭
             </span>
             <h3>내 유형 추정</h3>
-            <p>1분 미니 테스트로 16가지 디지털 활용 유형 중 나와 가까운 유형을 가볍게 알아봐요.</p>
+            <p>3분 미니 테스트로 16가지 디지털 활용 유형 중 나와 가까운 유형을 가볍게 알아봐요.</p>
           </Link>
           <span className="process-step-arrow" aria-hidden="true">
             →

@@ -870,6 +870,16 @@ main {
   margin-top: 1.75rem;
 }
 
+.mini-test-tiebreak-card.is-selected {
+  border-color: var(--sage);
+  background: var(--sage-pale);
+  box-shadow: 0 10px 26px rgba(44, 62, 51, 0.14);
+}
+
+.mini-test-tiebreak-card.is-selected strong {
+  color: var(--sage-dark);
+}
+
 /* ── Mini type test (preview corner) ── */
 
 .mini-test-entry-card {

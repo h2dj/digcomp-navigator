@@ -4,10 +4,20 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { DigcompAreaId } from "@/data/digcomp";
 import { areaColors, getDigitalTypeDefinition, sproutColor, type DigitalTypeId } from "@/data/digital-types";
-import { getAreaLabel, miniTestQuestions, tallyMiniTestResult } from "@/data/mini-type-test";
+import {
+  classifyMiniTest,
+  getAreaAbilityDescription,
+  getAreaLabel,
+  isBeginnerCandidateGateAnswer,
+  miniTestGateQuestion,
+  miniTestQuestions,
+  resolveMiniTestTiebreak,
+  type MiniTestClassification,
+  type MiniTestGateAnswer,
+} from "@/data/mini-type-test";
 import { storageKeys } from "@/lib/scoring";
 
-type Phase = "intro" | "questions" | "result";
+type Phase = "intro" | "gate" | "questions" | "tiebreak" | "result";
 
 const categoryLabels = {
   single: "단일 강점형",
@@ -18,7 +28,12 @@ const categoryLabels = {
 export function MiniTypeTest() {
   const [phase, setPhase] = useState<Phase>("intro");
   const [questionIndex, setQuestionIndex] = useState(0);
+  const [isBeginnerCandidate, setIsBeginnerCandidate] = useState(false);
   const [selectedAreas, setSelectedAreas] = useState<DigcompAreaId[]>([]);
+  const [tiebreak, setTiebreak] = useState<{ candidates: DigcompAreaId[]; slotsNeeded: number; fixedArea: DigcompAreaId | null } | null>(
+    null,
+  );
+  const [tiebreakPicked, setTiebreakPicked] = useState<DigcompAreaId[]>([]);
   const [resultTypeId, setResultTypeId] = useState<DigitalTypeId | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
 
@@ -41,17 +56,49 @@ export function MiniTypeTest() {
   }, [phase, resultTypeId]);
 
   function start() {
-    setPhase("questions");
+    setPhase("gate");
     setQuestionIndex(0);
     setSelectedAreas([]);
+    setTiebreak(null);
+    setTiebreakPicked([]);
   }
 
   function reset() {
     setPhase("intro");
     setQuestionIndex(0);
+    setIsBeginnerCandidate(false);
     setSelectedAreas([]);
+    setTiebreak(null);
+    setTiebreakPicked([]);
     setResultTypeId(null);
     setQrDataUrl(null);
+  }
+
+  function finishWithClassification(classification: MiniTestClassification) {
+    if (classification.kind === "result") {
+      applyResult(classification.typeId);
+      return;
+    }
+
+    setTiebreak({
+      candidates: classification.candidates,
+      slotsNeeded: classification.slotsNeeded,
+      fixedArea: classification.fixedArea,
+    });
+    setTiebreakPicked([]);
+    setPhase("tiebreak");
+  }
+
+  function applyResult(typeId: DigitalTypeId) {
+    setResultTypeId(typeId);
+    // 개별 답변은 저장하지 않고, 최종 결과 유형만 진단 화면에 참고로 보여주기 위해 남긴다.
+    window.localStorage.setItem(storageKeys.miniTestResultType, typeId);
+    setPhase("result");
+  }
+
+  function selectGateAnswer(answer: MiniTestGateAnswer) {
+    setIsBeginnerCandidate(isBeginnerCandidateGateAnswer(answer));
+    setPhase("questions");
   }
 
   function selectOption(areaId: DigcompAreaId) {
@@ -63,11 +110,27 @@ export function MiniTypeTest() {
       return;
     }
 
-    const typeId = tallyMiniTestResult(nextSelected);
-    setResultTypeId(typeId);
-    // 개별 답변은 저장하지 않고, 최종 결과 유형만 진단 화면에 참고로 보여주기 위해 남긴다.
-    window.localStorage.setItem(storageKeys.miniTestResultType, typeId);
-    setPhase("result");
+    setSelectedAreas(nextSelected);
+    finishWithClassification(classifyMiniTest(nextSelected, isBeginnerCandidate));
+  }
+
+  function toggleTiebreakCandidate(areaId: DigcompAreaId) {
+    if (!tiebreak) return;
+
+    setTiebreakPicked((previous) => {
+      if (previous.includes(areaId)) {
+        return previous.filter((id) => id !== areaId);
+      }
+      if (previous.length >= tiebreak.slotsNeeded) {
+        return previous;
+      }
+      return [...previous, areaId];
+    });
+  }
+
+  function confirmTiebreak() {
+    if (!tiebreak || tiebreakPicked.length !== tiebreak.slotsNeeded) return;
+    applyResult(resolveMiniTestTiebreak(tiebreak.fixedArea, tiebreakPicked));
   }
 
   if (phase === "intro") {
@@ -76,8 +139,10 @@ export function MiniTypeTest() {
         <div className="intro-icon" aria-hidden="true">
           🧭
         </div>
-        <h1>1분 미니 테스트로 미리 알아보기</h1>
-        <p className="intro-lead">5개의 질문에 답하면 나의 디지털 활용 유형을 가볍게 짐작해볼 수 있어요.</p>
+        <h1>3분 만에 찾는 나의 디지털 활용 유형</h1>
+        <p className="intro-lead">
+          서울공익활동박람회 부스에서 사용한 &ldquo;나의 디지털 체크카드&rdquo;를 온라인에서도 그대로 해볼 수 있어요.
+        </p>
         <p className="intro-copy">
           이름·연락처 입력 없이 바로 시작할 수 있어요. <strong>정확한 진단은 정식 진단</strong>에서 이루어지며,
           이 결과는 참고용이에요.
@@ -88,6 +153,72 @@ export function MiniTypeTest() {
         <Link href="/diagnosis" className="text-button type-picker-skip">
           바로 정식 진단하러 가기 &gt;
         </Link>
+      </section>
+    );
+  }
+
+  if (phase === "gate") {
+    return (
+      <section className="type-picker-page">
+        <span className="muted mini-test-counter">가볍게 하나만 답해주세요</span>
+        <h1 className="mini-test-question">{miniTestGateQuestion.question}</h1>
+        <div className="type-picker-grid mini-test-options">
+          {miniTestGateQuestion.options.map((option) => (
+            <button
+              key={option.key}
+              type="button"
+              className="type-picker-card"
+              onClick={() => selectGateAnswer(option.key)}
+            >
+              <strong>{option.label}</strong>
+            </button>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  if (phase === "tiebreak" && tiebreak) {
+    const selectionDone = tiebreakPicked.length === tiebreak.slotsNeeded;
+
+    return (
+      <section className="type-picker-page">
+        <div className="intro-icon" aria-hidden="true">
+          🎁
+        </div>
+        <h1 className="mini-test-question">동점인 능력 가운데 딱 하나를 선물 받을 수 있다면?</h1>
+        <p className="intro-copy">
+          {tiebreak.slotsNeeded === 1
+            ? "가장 갖고 싶은 능력 1가지를 골라주세요."
+            : `가장 갖고 싶은 능력 ${tiebreak.slotsNeeded}가지를 골라주세요.`}
+        </p>
+        <div className="type-picker-grid mini-test-options">
+          {tiebreak.candidates.map((areaId) => {
+            const isSelected = tiebreakPicked.includes(areaId);
+            return (
+              <button
+                key={areaId}
+                type="button"
+                className={`type-picker-card mini-test-tiebreak-card${isSelected ? " is-selected" : ""}`}
+                onClick={() => toggleTiebreakCandidate(areaId)}
+              >
+                <strong>
+                  {isSelected ? "✓ " : ""}
+                  {getAreaLabel(areaId)}
+                </strong>
+                <p>{getAreaAbilityDescription(areaId)}</p>
+              </button>
+            );
+          })}
+        </div>
+        <button
+          type="button"
+          className="button intro-start"
+          disabled={!selectionDone}
+          onClick={confirmTiebreak}
+        >
+          결과 보기 &gt;
+        </button>
       </section>
     );
   }

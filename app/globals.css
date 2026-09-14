@@ -804,11 +804,6 @@ main {
   vertical-align: middle;
 }
 
-.type-complement-card {
-  border-left: 4px solid var(--cta);
-  margin-bottom: 1.5rem;
-}
-
 /* ── 디지털 미니 처방전 카드 (서울공익활동박람회 부스 웹페이지 이식) ── */
 
 .rx-card {

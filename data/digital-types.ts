@@ -223,11 +223,6 @@ export function getSynergyTypeId(areaA: DigcompAreaId, areaB: DigcompAreaId): Di
   return found.id;
 }
 
-/** 서울공익활동박람회 부스에서 배포한 "디지털 미니 처방전" 카드 이미지(public/types/<id>.webp) */
-export function getDigitalTypeCardImageUrl(id: DigitalTypeId): string {
-  return `/types/${id}.webp`;
-}
-
 export const sproutTypeId: DigitalTypeId = "sprout";
 
 /** 판정 기준 (영역 점수는 0~100점 환산 기준) */

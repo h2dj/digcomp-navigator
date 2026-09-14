@@ -809,35 +809,371 @@ main {
   margin-bottom: 1.5rem;
 }
 
-.type-prescription-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
+/* ── 디지털 미니 처방전 카드 (서울공익활동박람회 부스 웹페이지 이식) ── */
 
-.type-prescription-image-link {
-  display: block;
-  width: min(420px, 100%);
-  margin: 1rem 0 0.75rem;
-  border-radius: 1rem;
-  overflow: hidden;
-  box-shadow: var(--shadow);
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.type-prescription-image-link:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 16px 40px rgba(44, 62, 51, 0.14);
-}
-
-.type-prescription-image {
-  display: block;
+.rx-card {
+  --rx-line: #dfe6ee;
+  --rx-red: #ef3f58;
+  --rx-yellow: #fff2a8;
   width: 100%;
-  height: auto;
+  margin: 0 0 1.5rem;
+  background: #fff;
+  border: 2px solid var(--rx-theme);
+  border-radius: 1.75rem;
+  overflow: hidden;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.08);
+  color: #17304f;
+}
+
+.rx-card-printbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.9rem 1.2rem 0;
+}
+
+.rx-card-printbar button {
+  border: 0;
+  border-radius: 999px;
+  background: var(--rx-theme);
+  color: #fff;
+  padding: 0.55rem 1rem;
+  font-weight: 800;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.rx-card-hero {
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr;
+  gap: 1.2rem;
+  padding: 1.6rem 1.8rem 1.3rem;
+  background: linear-gradient(135deg, #fff 20%, var(--rx-soft));
+}
+
+.rx-card-badge {
+  font-weight: 900;
+  color: var(--rx-theme);
+  font-size: 0.95rem;
+}
+
+.rx-card-name {
+  margin: 0.7rem 0 0.5rem;
+  font-family: var(--font-sans);
+  font-size: clamp(2rem, 6vw, 3rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--rx-theme);
+}
+
+.rx-card-lead {
+  font-size: 1.1rem;
+  line-height: 1.5;
+  font-weight: 800;
+  margin: 0;
+  color: #17304f;
+}
+
+.rx-card-tag {
+  display: inline-block;
+  margin-top: 0.9rem;
+  background: var(--rx-soft);
+  color: var(--rx-theme);
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 0.85rem;
+}
+
+.rx-card-hero-art {
+  min-height: 160px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  position: relative;
+}
+
+.rx-card-emoji {
+  font-size: clamp(3.5rem, 10vw, 5.5rem);
+  line-height: 1;
+}
+
+.rx-card-speech {
+  position: absolute;
+  left: 0;
+  top: 0;
+  max-width: 220px;
+  background: #fff;
+  border: 2px solid var(--rx-theme);
+  border-radius: 1.2rem;
+  padding: 0.8rem 0.9rem;
+  color: var(--rx-theme);
+  font-weight: 900;
+  line-height: 1.4;
+  font-size: 0.85rem;
+}
+
+.rx-card-grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  padding: 1rem 1.8rem 0;
+}
+
+.rx-card-panel {
+  border: 1px solid var(--rx-line);
+  border-radius: 1.2rem;
+  padding: 1.2rem;
+  background: #fff;
+}
+
+.rx-card-panel h3 {
+  margin: 0 0 0.8rem;
+  font-size: 1.1rem;
+}
+
+.rx-card-panel ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.rx-card-panel li {
+  display: grid;
+  grid-template-columns: 1.2rem 1fr;
+  gap: 0.5rem;
+  line-height: 1.5;
+  font-size: 0.92rem;
+}
+
+.rx-card-good {
+  background: linear-gradient(#fff, var(--rx-soft));
+}
+
+.rx-card-warn {
+  background: linear-gradient(#fff, #fff3f5);
+  border-color: #ffd7de;
+}
+
+.rx-card-dot {
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: var(--rx-theme);
+  font-size: 0.7rem;
+  font-weight: 900;
+  margin-top: 0.1rem;
+}
+
+.rx-card-dot.is-warn {
+  background: var(--rx-red);
+}
+
+.rx-card-rxbox {
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 1.1rem;
+  margin: 1rem 1.8rem 0;
+  padding: 1.3rem;
+  border-radius: 1.2rem;
+  border: 1px solid var(--rx-line);
+  background: linear-gradient(135deg, #fff, var(--rx-soft));
+}
+
+.rx-card-rxbox h3 {
+  margin: 0 0 0.6rem;
+  font-size: 1.15rem;
+}
+
+.rx-card-rxbox ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.rx-card-rxbox li {
+  display: grid;
+  grid-template-columns: 1.2rem 1fr;
+  gap: 0.5rem;
+  line-height: 1.5;
+  font-size: 0.92rem;
+}
+
+.rx-card-quote {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: var(--rx-theme);
+  line-height: 1.4;
+  margin: 0.4rem 0 0.9rem;
+}
+
+.rx-card-sticky {
+  background: var(--rx-yellow);
+  border-radius: 0.6rem;
+  padding: 1.1rem;
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
+  transform: rotate(-2deg);
+  font-weight: 700;
+  line-height: 1.55;
+  align-self: center;
+  font-size: 0.88rem;
+}
+
+.rx-card-sticky strong {
+  display: block;
+  color: #e84725;
+  font-size: 1.05rem;
+  margin-bottom: 0.5rem;
+}
+
+.rx-card-sticky p {
+  margin: 0.4rem 0 0;
+}
+
+.rx-card-growth {
+  margin: 1rem 1.8rem 0;
+  padding: 1.3rem;
+  border-radius: 1.2rem;
+  background: #f8fbff;
+  border: 1px solid var(--rx-line);
+}
+
+.rx-card-growth h3 {
+  margin: 0 0 0.8rem;
+  font-size: 1.15rem;
+  color: var(--rx-theme);
+}
+
+.rx-card-growth h3 small {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #6b7f95;
+  margin-left: 0.4rem;
+}
+
+.rx-card-steps {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.rx-card-step {
+  display: grid;
+  grid-template-columns: 1.9rem 1fr;
+  gap: 0.6rem;
+  align-items: start;
+}
+
+.rx-card-step-num {
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 50%;
+  background: var(--rx-theme);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  font-size: 0.85rem;
+}
+
+.rx-card-step-title {
+  display: block;
+  font-weight: 900;
+  color: var(--rx-theme);
+  font-size: 0.95rem;
+}
+
+.rx-card-step-desc {
+  display: block;
+  grid-column: 2;
+  color: #3e5b78;
+  line-height: 1.5;
+  font-size: 0.88rem;
+}
+
+.rx-card-tools {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 1rem;
+  margin: 1rem 1.8rem 1.5rem;
+}
+
+.rx-card-message,
+.rx-card-toolbox {
+  border: 1px solid var(--rx-line);
+  border-radius: 1.1rem;
+  padding: 1.1rem;
+  background: #fff;
+}
+
+.rx-card-message {
+  display: flex;
+  align-items: center;
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: var(--rx-theme);
+  line-height: 1.5;
+}
+
+.rx-card-toolbox h3 {
+  margin: 0 0 0.6rem;
+  font-size: 1.05rem;
+}
+
+.rx-card-toolbox ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  line-height: 1.75;
+  color: #35526f;
+  font-size: 0.88rem;
+}
+
+.rx-card-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0 1.8rem 1.3rem;
+  color: #58708a;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 720px) {
+  .rx-card-hero,
+  .rx-card-grid2,
+  .rx-card-rxbox,
+  .rx-card-tools {
+    grid-template-columns: 1fr;
+  }
+
+  .rx-card-hero-art {
+    min-height: 110px;
+    justify-content: flex-start;
+  }
+
+  .rx-card-speech {
+    position: static;
+    margin-bottom: 0.6rem;
+  }
+
+  .rx-card-step {
+    grid-template-columns: 1.9rem 1fr;
+  }
+
+  .rx-card-printbar {
+    display: none;
+  }
+}
+
+@media print {
+  .rx-card-printbar {
+    display: none;
+  }
 }
 
 /* ── Digital type picker (basic diagnosis intro step) ── */

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { areaColors, getDigitalTypeDefinition, sproutColor } from "@/data/digital-types";
+import { DigitalTypePrescriptionCard } from "@/components/DigitalTypePrescriptionCard";
 import type { AssessmentResult } from "@/lib/scoring";
 
 type DigitalTypeCardProps = {
@@ -69,6 +70,8 @@ export function DigitalTypeCard({ result }: DigitalTypeCardProps) {
         <h2>{type.name}에게 추천해요</h2>
         <p>{type.tip}</p>
       </section>
+
+      <DigitalTypePrescriptionCard typeId={type.id} typeName={type.name} />
     </>
   );
 }

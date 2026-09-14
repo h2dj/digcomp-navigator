@@ -10,6 +10,7 @@ import {
   isDigitalTypeId,
   sproutColor,
 } from "@/data/digital-types";
+import { DigitalTypePrescriptionCard } from "@/components/DigitalTypePrescriptionCard";
 
 const categoryLabels = {
   single: "단일 강점형",
@@ -92,6 +93,10 @@ export default function DigitalTypeDetailPage() {
           <h2>{type.name}에게 추천해요</h2>
           <p>{type.tip}</p>
         </div>
+      </section>
+
+      <section className="section compact">
+        <DigitalTypePrescriptionCard typeId={type.id} typeName={type.name} />
       </section>
 
       <section className="section compact">

@@ -2,7 +2,7 @@ import { ensureSchema, getSql, isDatabaseConfigured } from "@/lib/db";
 import { digcompAreas, type DigcompAreaId } from "@/data/digcomp";
 import { normalizeOrganizationType, normalizeProfileRole, profileOrganizationOptions, profileRoleOptions } from "@/lib/profile-options";
 import type { AggregateStats, DistributionItem, SegmentStat } from "@/lib/public-stats";
-import type { AssessmentResult, Profile } from "@/lib/scoring";
+import { getLegacyProficiencyLevel, normalizeProficiencyLevel, type AssessmentResult, type Profile, type ProficiencyLevel } from "@/lib/scoring";
 
 export type { AggregateStats };
 
@@ -355,27 +355,60 @@ export type UserSummary = {
   profile: Profile;
   resultCount: number;
   latestResultAt: string | null;
+  latestLevel: ProficiencyLevel | null;
+  latestDigitalTypeId: string | null;
   updatedAt: string;
 };
+
+export type ListUsersSort = "updatedAt" | "email" | "resultCount" | "latestResultAt";
 
 export type ListUsersFilters = {
   role?: string;
   organizationType?: string;
+  emailQuery?: string;
+  /** 최상급 등 등급 탭 필터. 예전 등급 명칭(기초/고급/전문가)으로 저장된 결과도 함께 매칭한다. */
+  level?: ProficiencyLevel;
+  digitalTypeId?: string;
+  /** true면 진단을 한 번이라도 완료한 이용자만 반환한다. */
+  hasResults?: boolean;
+  sort?: ListUsersSort;
 };
+
+export type ListUsersResult = {
+  users: UserSummary[];
+  total: number;
+};
+
+const sortOrderByClauses: Record<ListUsersSort, string> = {
+  updatedAt: "u.updated_at DESC",
+  email: "u.email ASC NULLS LAST, u.updated_at DESC",
+  resultCount: "result_count DESC, u.updated_at DESC",
+  latestResultAt: "latest_result_at DESC NULLS LAST",
+};
+
+function levelSynonyms(level: ProficiencyLevel): string[] {
+  const legacy = getLegacyProficiencyLevel(level);
+  return legacy ? [level, legacy] : [level];
+}
 
 export async function listUsers(
   limit = 100,
   offset = 0,
   filters: ListUsersFilters = {},
-): Promise<UserSummary[]> {
-  if (!isDatabaseConfigured()) return [];
+): Promise<ListUsersResult> {
+  if (!isDatabaseConfigured()) return { users: [], total: 0 };
 
   await ensureSchema();
   const sql = getSql();
-  if (!sql) return [];
+  if (!sql) return { users: [], total: 0 };
 
   const roleFilter = filters.role?.trim() || null;
   const organizationTypeFilter = filters.organizationType?.trim() || null;
+  const emailFilter = filters.emailQuery?.trim() ? `%${filters.emailQuery.trim()}%` : null;
+  const levelFilter = filters.level ? levelSynonyms(filters.level) : null;
+  const digitalTypeFilter = filters.digitalTypeId?.trim() || null;
+  const hasResultsFilter = filters.hasResults ?? false;
+  const orderBy = sortOrderByClauses[filters.sort ?? "updatedAt"];
 
   const rows = await sql`
     SELECT
@@ -384,25 +417,46 @@ export async function listUsers(
       u.profile,
       u.updated_at,
       COUNT(r.id)::int AS result_count,
-      MAX(r.created_at) AS latest_result_at
+      lr.created_at AS latest_result_at,
+      lr.result->>'level' AS latest_level,
+      lr.result->'digitalType'->>'typeId' AS latest_type_id,
+      COUNT(*) OVER()::int AS total_count
     FROM users u
     LEFT JOIN assessment_results r ON r.user_id = u.id
+    LEFT JOIN LATERAL (
+      SELECT ar.created_at, ar.result
+      FROM assessment_results ar
+      WHERE ar.user_id = u.id
+      ORDER BY ar.created_at DESC
+      LIMIT 1
+    ) lr ON true
     WHERE (${roleFilter}::text IS NULL OR u.profile->>'role' = ${roleFilter})
       AND (${organizationTypeFilter}::text IS NULL OR u.profile->>'organizationType' = ${organizationTypeFilter})
-    GROUP BY u.id, u.email, u.profile, u.updated_at
-    ORDER BY u.updated_at DESC
+      AND (${emailFilter}::text IS NULL OR u.email ILIKE ${emailFilter})
+      AND (${levelFilter}::text[] IS NULL OR lr.result->>'level' = ANY(${levelFilter}))
+      AND (${digitalTypeFilter}::text IS NULL OR lr.result->'digitalType'->>'typeId' = ${digitalTypeFilter})
+    GROUP BY u.id, u.email, u.profile, u.updated_at, lr.created_at, lr.result
+    HAVING (${hasResultsFilter}::boolean IS NOT TRUE OR COUNT(r.id) > 0)
+    ORDER BY ${sql.unsafe(orderBy)}
     LIMIT ${limit}
     OFFSET ${offset}
   `;
 
-  return rows.map((row) => ({
-    userId: row.id as string,
-    email: (row.email as string | null) ?? null,
-    profile: row.profile as Profile,
-    resultCount: Number(row.result_count ?? 0),
-    latestResultAt: row.latest_result_at ? new Date(row.latest_result_at as string).toISOString() : null,
-    updatedAt: new Date(row.updated_at as string).toISOString(),
-  }));
+  const total = rows.length > 0 ? Number(rows[0].total_count ?? 0) : 0;
+
+  return {
+    total,
+    users: rows.map((row) => ({
+      userId: row.id as string,
+      email: (row.email as string | null) ?? null,
+      profile: row.profile as Profile,
+      resultCount: Number(row.result_count ?? 0),
+      latestResultAt: row.latest_result_at ? new Date(row.latest_result_at as string).toISOString() : null,
+      latestLevel: normalizeProficiencyLevel(row.latest_level as string | null),
+      latestDigitalTypeId: (row.latest_type_id as string | null) ?? null,
+      updatedAt: new Date(row.updated_at as string).toISOString(),
+    })),
+  };
 }
 
 export async function deleteUser(userId: string): Promise<boolean> {

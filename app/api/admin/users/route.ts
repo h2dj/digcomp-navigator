@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
-import { deleteUser, listUsers } from "@/lib/server-user-store";
+import { deleteUser, listUsers, type ListUsersSort } from "@/lib/server-user-store";
 import { isDatabaseConfigured } from "@/lib/db";
+import { isProficiencyLevel } from "@/lib/scoring";
+
+const sortValues: ListUsersSort[] = ["updatedAt", "email", "resultCount", "latestResultAt"];
+
+function parseSort(value: string | null): ListUsersSort | undefined {
+  return sortValues.find((sort) => sort === value);
+}
 
 export async function GET(request: Request) {
   if (!isDatabaseConfigured()) {
@@ -9,12 +16,27 @@ export async function GET(request: Request) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const limit = Math.min(Number.parseInt(searchParams.get("limit") ?? "100", 10) || 100, 200);
+    const limit = Math.min(Number.parseInt(searchParams.get("limit") ?? "20", 10) || 20, 100);
     const offset = Math.max(Number.parseInt(searchParams.get("offset") ?? "0", 10) || 0, 0);
     const role = searchParams.get("role")?.trim() || undefined;
     const organizationType = searchParams.get("organizationType")?.trim() || undefined;
-    const users = await listUsers(limit, offset, { role, organizationType });
-    return NextResponse.json({ users });
+    const emailQuery = searchParams.get("email")?.trim() || undefined;
+    const digitalTypeId = searchParams.get("digitalTypeId")?.trim() || undefined;
+    const levelParam = searchParams.get("level")?.trim() || "";
+    const level = isProficiencyLevel(levelParam) ? levelParam : undefined;
+    const hasResults = searchParams.get("hasResults") === "true";
+    const sort = parseSort(searchParams.get("sort"));
+
+    const result = await listUsers(limit, offset, {
+      role,
+      organizationType,
+      emailQuery,
+      digitalTypeId,
+      level,
+      hasResults,
+      sort,
+    });
+    return NextResponse.json(result);
   } catch {
     return NextResponse.json({ error: "이용자 목록을 불러오지 못했습니다." }, { status: 500 });
   }

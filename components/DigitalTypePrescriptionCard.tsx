@@ -1,6 +1,6 @@
 "use client";
 
-import type { CSSProperties } from "react";
+import { useRef, useState, type CSSProperties } from "react";
 import { digitalTypeCardContent } from "@/data/digital-type-cards";
 import type { DigitalTypeId } from "@/data/digital-types";
 
@@ -18,24 +18,97 @@ function withLineBreaks(lines: string[], keyPrefix: string) {
   ));
 }
 
+/** 액션바(버튼)를 가려서 캡처하기 위한 html2canvas 옵션 */
+function ignoreActionbar(element: Element): boolean {
+  return element.classList?.contains("rx-card-actionbar") ?? false;
+}
+
+async function captureCardCanvas(card: HTMLElement) {
+  const { default: html2canvas } = await import("html2canvas");
+  return html2canvas(card, {
+    scale: 2,
+    backgroundColor: "#ffffff",
+    useCORS: true,
+    ignoreElements: ignoreActionbar,
+  });
+}
+
+function triggerDownload(href: string, filename: string) {
+  const link = document.createElement("a");
+  link.href = href;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 /**
  * 서울공익활동박람회 부스에서 배포한 "디지털 미니 처방전" 웹페이지(16종)를
  * 그대로 옮긴 카드. 강점·주의점·오늘의 처방·성장 가이드·추천 도구를 담고 있다.
  */
 export function DigitalTypePrescriptionCard({ typeId, typeName }: DigitalTypePrescriptionCardProps) {
   const content = digitalTypeCardContent[typeId];
+  const cardRef = useRef<HTMLElement>(null);
+  const [pending, setPending] = useState<"image" | "pdf" | null>(null);
+  const [error, setError] = useState("");
+
   const themeStyle = {
     "--rx-theme": content.themeColor,
     "--rx-soft": content.softColor,
   } as CSSProperties;
 
+  async function handleDownloadImage() {
+    if (!cardRef.current || pending) return;
+    setPending("image");
+    setError("");
+
+    try {
+      const canvas = await captureCardCanvas(cardRef.current);
+      triggerDownload(canvas.toDataURL("image/png"), `${typeName}_디지털미니처방전.png`);
+    } catch {
+      setError("이미지를 만드는 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setPending(null);
+    }
+  }
+
+  async function handleDownloadPdf() {
+    if (!cardRef.current || pending) return;
+    setPending("pdf");
+    setError("");
+
+    try {
+      const canvas = await captureCardCanvas(cardRef.current);
+      const { jsPDF } = await import("jspdf");
+      const pdf = new jsPDF({
+        orientation: canvas.width > canvas.height ? "landscape" : "portrait",
+        unit: "px",
+        format: [canvas.width, canvas.height],
+      });
+      pdf.addImage(canvas.toDataURL("image/jpeg", 0.92), "JPEG", 0, 0, canvas.width, canvas.height);
+      pdf.save(`${typeName}_디지털미니처방전.pdf`);
+    } catch {
+      setError("PDF를 만드는 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setPending(null);
+    }
+  }
+
   return (
-    <section className="rx-card" style={themeStyle}>
-      <div className="rx-card-printbar">
-        <button type="button" onClick={() => window.print()}>
-          A4로 인쇄하기
+    <section className="rx-card" style={themeStyle} ref={cardRef}>
+      <div className="rx-card-actionbar">
+        <button type="button" onClick={() => window.print()} disabled={pending !== null}>
+          인쇄하기
+        </button>
+        <button type="button" onClick={() => void handleDownloadImage()} disabled={pending !== null}>
+          {pending === "image" ? "저장 중..." : "이미지로 저장"}
+        </button>
+        <button type="button" onClick={() => void handleDownloadPdf()} disabled={pending !== null}>
+          {pending === "pdf" ? "저장 중..." : "PDF로 저장"}
         </button>
       </div>
+
+      {error ? <p className="rx-card-error">{error}</p> : null}
 
       <div className="rx-card-hero">
         <div>

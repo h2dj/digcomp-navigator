@@ -820,13 +820,15 @@ main {
   color: #17304f;
 }
 
-.rx-card-printbar {
+.rx-card-actionbar {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
+  gap: 0.5rem;
   padding: 0.9rem 1.2rem 0;
 }
 
-.rx-card-printbar button {
+.rx-card-actionbar button {
   border: 0;
   border-radius: 999px;
   background: var(--rx-theme);
@@ -835,6 +837,26 @@ main {
   font-weight: 800;
   font-size: 0.85rem;
   cursor: pointer;
+}
+
+.rx-card-actionbar button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.rx-card-actionbar button:nth-child(2),
+.rx-card-actionbar button:nth-child(3) {
+  background: #fff;
+  border: 1.5px solid var(--rx-theme);
+  color: var(--rx-theme);
+}
+
+.rx-card-error {
+  margin: 0.6rem 1.2rem 0;
+  color: var(--rx-red);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: right;
 }
 
 .rx-card-hero {
@@ -1160,14 +1182,37 @@ main {
     grid-template-columns: 1.9rem 1fr;
   }
 
-  .rx-card-printbar {
-    display: none;
+  .rx-card-actionbar {
+    justify-content: stretch;
+  }
+
+  .rx-card-actionbar button {
+    flex: 1 1 auto;
   }
 }
 
 @media print {
-  .rx-card-printbar {
-    display: none;
+  body * {
+    visibility: hidden;
+  }
+
+  .rx-card,
+  .rx-card * {
+    visibility: visible;
+  }
+
+  .rx-card {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    margin: 0;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  .rx-card-actionbar {
+    display: none !important;
   }
 }
 

@@ -29,6 +29,8 @@ export default function AdminUsersPage() {
   const [emailInput, setEmailInput] = useState("");
   const [emailQuery, setEmailQuery] = useState("");
   const [hasResultsOnly, setHasResultsOnly] = useState(false);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [sort, setSort] = useState(sortOptions[0].value);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -48,6 +50,8 @@ export default function AdminUsersPage() {
       if (digitalTypeFilter) params.set("digitalTypeId", digitalTypeFilter);
       if (emailQuery) params.set("email", emailQuery);
       if (hasResultsOnly) params.set("hasResults", "true");
+      if (dateFrom) params.set("from", dateFrom);
+      if (dateTo) params.set("to", dateTo);
       if (sort) params.set("sort", sort);
 
       const response = await fetch(`/api/admin/users?${params.toString()}`);
@@ -63,7 +67,18 @@ export default function AdminUsersPage() {
     } finally {
       setLoading(false);
     }
-  }, [roleFilter, organizationFilter, levelFilter, digitalTypeFilter, emailQuery, hasResultsOnly, sort, page]);
+  }, [
+    roleFilter,
+    organizationFilter,
+    levelFilter,
+    digitalTypeFilter,
+    emailQuery,
+    hasResultsOnly,
+    dateFrom,
+    dateTo,
+    sort,
+    page,
+  ]);
 
   useEffect(() => {
     void loadUsers();
@@ -72,7 +87,7 @@ export default function AdminUsersPage() {
   // 필터·정렬이 바뀌면 1페이지부터 다시 본다.
   useEffect(() => {
     setPage(1);
-  }, [roleFilter, organizationFilter, levelFilter, digitalTypeFilter, emailQuery, hasResultsOnly, sort]);
+  }, [roleFilter, organizationFilter, levelFilter, digitalTypeFilter, emailQuery, hasResultsOnly, dateFrom, dateTo, sort]);
 
   async function handleDelete(userId: string) {
     if (!window.confirm("이 이용자와 모든 진단 결과를 삭제할까요?")) return;
@@ -99,10 +114,19 @@ export default function AdminUsersPage() {
     setEmailInput("");
     setEmailQuery("");
     setHasResultsOnly(false);
+    setDateFrom("");
+    setDateTo("");
   }
 
   const hasActiveFilters = Boolean(
-    roleFilter || organizationFilter || levelFilter || digitalTypeFilter || emailQuery || hasResultsOnly,
+    roleFilter ||
+      organizationFilter ||
+      levelFilter ||
+      digitalTypeFilter ||
+      emailQuery ||
+      hasResultsOnly ||
+      dateFrom ||
+      dateTo,
   );
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
@@ -196,6 +220,20 @@ export default function AdminUsersPage() {
             검색
           </button>
         </form>
+
+        <div className="admin-date-range">
+          <label>
+            진단 기간(시작)
+            <input type="date" value={dateFrom} onChange={(event) => setDateFrom(event.target.value)} max={dateTo || undefined} />
+          </label>
+          <span className="admin-date-range-sep" aria-hidden="true">
+            ~
+          </span>
+          <label>
+            진단 기간(종료)
+            <input type="date" value={dateTo} onChange={(event) => setDateTo(event.target.value)} min={dateFrom || undefined} />
+          </label>
+        </div>
 
         <label className="admin-checkbox-field">
           <input type="checkbox" checked={hasResultsOnly} onChange={(event) => setHasResultsOnly(event.target.checked)} />

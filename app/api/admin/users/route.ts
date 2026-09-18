@@ -4,9 +4,15 @@ import { isDatabaseConfigured } from "@/lib/db";
 import { isProficiencyLevel } from "@/lib/scoring";
 
 const sortValues: ListUsersSort[] = ["updatedAt", "email", "resultCount", "latestResultAt"];
+const isoDatePattern = /^\d{4}-\d{2}-\d{2}$/;
 
 function parseSort(value: string | null): ListUsersSort | undefined {
   return sortValues.find((sort) => sort === value);
+}
+
+function parseIsoDate(value: string | null): string | undefined {
+  const trimmed = value?.trim() ?? "";
+  return isoDatePattern.test(trimmed) ? trimmed : undefined;
 }
 
 export async function GET(request: Request) {
@@ -26,6 +32,8 @@ export async function GET(request: Request) {
     const level = isProficiencyLevel(levelParam) ? levelParam : undefined;
     const hasResults = searchParams.get("hasResults") === "true";
     const sort = parseSort(searchParams.get("sort"));
+    const resultDateFrom = parseIsoDate(searchParams.get("from"));
+    const resultDateTo = parseIsoDate(searchParams.get("to"));
 
     const result = await listUsers(limit, offset, {
       role,
@@ -34,6 +42,8 @@ export async function GET(request: Request) {
       digitalTypeId,
       level,
       hasResults,
+      resultDateFrom,
+      resultDateTo,
       sort,
     });
     return NextResponse.json(result);

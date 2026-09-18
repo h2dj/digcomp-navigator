@@ -2278,7 +2278,8 @@ main {
 .admin-question-item textarea,
 .admin-scale-editor input,
 .admin-filter-grid select,
-.admin-email-search input {
+.admin-email-search input,
+.admin-date-range input {
   width: 100%;
   border: 1px solid var(--line);
   border-radius: 0.8rem;
@@ -2314,6 +2315,25 @@ main {
   display: grid;
   gap: 0.4rem;
   font-weight: 600;
+}
+
+.admin-date-range {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.admin-date-range label {
+  display: grid;
+  gap: 0.4rem;
+  font-weight: 600;
+}
+
+.admin-date-range-sep {
+  padding-bottom: 0.75rem;
+  color: var(--muted);
 }
 
 .admin-checkbox-field {

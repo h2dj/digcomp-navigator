@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import { digitalTypeCardContent } from "@/data/digital-type-cards";
 import type { DigitalTypeId } from "@/data/digital-types";
 
@@ -51,6 +52,11 @@ export function DigitalTypePrescriptionCard({ typeId, typeName }: DigitalTypePre
   const cardRef = useRef<HTMLElement>(null);
   const [pending, setPending] = useState<"image" | "pdf" | null>(null);
   const [error, setError] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const themeStyle = {
     "--rx-theme": content.themeColor,
@@ -94,22 +100,8 @@ export function DigitalTypePrescriptionCard({ typeId, typeName }: DigitalTypePre
     }
   }
 
-  return (
-    <section className="rx-card" style={themeStyle} ref={cardRef}>
-      <div className="rx-card-actionbar">
-        <button type="button" onClick={() => window.print()} disabled={pending !== null}>
-          인쇄하기
-        </button>
-        <button type="button" onClick={() => void handleDownloadImage()} disabled={pending !== null}>
-          {pending === "image" ? "저장 중..." : "이미지로 저장"}
-        </button>
-        <button type="button" onClick={() => void handleDownloadPdf()} disabled={pending !== null}>
-          {pending === "pdf" ? "저장 중..." : "PDF로 저장"}
-        </button>
-      </div>
-
-      {error ? <p className="rx-card-error">{error}</p> : null}
-
+  const cardBody = (
+    <>
       <div className="rx-card-hero">
         <div>
           <span className="rx-card-badge">Rx · 디지털 미니 처방전</span>
@@ -204,6 +196,37 @@ export function DigitalTypePrescriptionCard({ typeId, typeName }: DigitalTypePre
         <span>다양한 사람들이 만드는 더 좋은 디지털 사회</span>
         <span>나의 가능성이, 더 나은 변화를 만듭니다.</span>
       </div>
+
+      <div className="rx-card-credit">공동체IT사회적협동조합 · https://ictact.kr</div>
+    </>
+  );
+
+  return (
+    <section className="rx-card" style={themeStyle} ref={cardRef}>
+      <div className="rx-card-actionbar">
+        <button type="button" onClick={() => window.print()} disabled={pending !== null}>
+          인쇄하기
+        </button>
+        <button type="button" onClick={() => void handleDownloadImage()} disabled={pending !== null}>
+          {pending === "image" ? "저장 중..." : "이미지로 저장"}
+        </button>
+        <button type="button" onClick={() => void handleDownloadPdf()} disabled={pending !== null}>
+          {pending === "pdf" ? "저장 중..." : "PDF로 저장"}
+        </button>
+      </div>
+
+      {error ? <p className="rx-card-error">{error}</p> : null}
+
+      {cardBody}
+
+      {mounted
+        ? createPortal(
+            <section className="rx-card rx-print-portal" style={themeStyle}>
+              {cardBody}
+            </section>,
+            document.body,
+          )
+        : null}
     </section>
   );
 }

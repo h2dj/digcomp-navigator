@@ -1160,6 +1160,14 @@ main {
   font-size: 0.8rem;
 }
 
+.rx-card-credit {
+  padding: 0.7rem 1.8rem;
+  border-top: 1px solid var(--rx-line);
+  color: #8496ad;
+  font-size: 0.72rem;
+  text-align: center;
+}
+
 @media (max-width: 720px) {
   .rx-card-hero,
   .rx-card-grid2,
@@ -1191,28 +1199,207 @@ main {
   }
 }
 
+@page {
+  size: A4;
+  margin: 10mm;
+}
+
+.rx-print-portal {
+  display: none;
+}
+
 @media print {
-  body * {
-    visibility: hidden;
+  /*
+   * body의 직계 자식 중 인쇄 전용 포털(.rx-print-portal)만 남기고 나머지는
+   * display:none으로 완전히 걷어낸다. visibility:hidden은 레이아웃 공간을
+   * 그대로 차지해 숨겨진 나머지 페이지 콘텐츠 높이만큼 빈 페이지가 추가로
+   * 생성되는 문제가 있어 사용하지 않는다.
+   */
+  body > *:not(.rx-print-portal) {
+    display: none !important;
   }
 
-  .rx-card,
-  .rx-card * {
-    visibility: visible;
+  .rx-print-portal {
+    display: block;
   }
 
-  .rx-card {
-    position: absolute;
-    inset: 0;
+  .rx-print-portal .rx-card {
     width: 100%;
     margin: 0;
     border: none;
     box-shadow: none;
     border-radius: 0;
+    font-size: 0.8rem;
   }
 
-  .rx-card-actionbar {
-    display: none !important;
+  .rx-card-hero {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+    padding: 0.4rem 0.9rem 0.3rem;
+  }
+
+  .rx-card-hero-art {
+    display: none;
+  }
+
+  .rx-card-badge {
+    font-size: 0.75rem;
+  }
+
+  .rx-card-name {
+    margin: 0.2rem 0;
+    font-size: 1.5rem;
+  }
+
+  .rx-card-lead {
+    font-size: 0.85rem;
+    line-height: 1.25;
+  }
+
+  .rx-card-tag {
+    margin-top: 0.3rem;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.68rem;
+  }
+
+  .rx-card-grid2 {
+    gap: 0.5rem;
+    padding: 0.4rem 0.9rem 0;
+  }
+
+  .rx-card-panel {
+    padding: 0.4rem 0.5rem;
+  }
+
+  .rx-card-panel h3 {
+    margin: 0 0 0.3rem;
+    font-size: 0.85rem;
+  }
+
+  .rx-card-panel ul {
+    gap: 0.12rem;
+  }
+
+  .rx-card-panel li {
+    line-height: 1.25;
+    font-size: 0.68rem;
+  }
+
+  .rx-card-rxbox {
+    grid-template-columns: 1fr 160px;
+    gap: 0.5rem;
+    margin: 0.35rem 0.9rem 0;
+    padding: 0.45rem;
+  }
+
+  .rx-card-rxbox h3 {
+    margin: 0 0 0.3rem;
+    font-size: 0.85rem;
+  }
+
+  .rx-card-rxbox ul {
+    gap: 0.12rem;
+  }
+
+  .rx-card-rxbox li {
+    line-height: 1.25;
+    font-size: 0.68rem;
+  }
+
+  .rx-card-quote {
+    font-size: 0.85rem;
+    line-height: 1.25;
+    margin: 0.2rem 0 0.4rem;
+  }
+
+  .rx-card-sticky {
+    padding: 0.35rem 0.5rem;
+    transform: none;
+    line-height: 1.2;
+    font-size: 0.62rem;
+  }
+
+  .rx-card-sticky strong {
+    font-size: 0.78rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .rx-card-sticky p {
+    margin: 0.2rem 0 0;
+  }
+
+  .rx-card-growth {
+    margin: 0.3rem 0.9rem 0;
+    padding: 0.4rem;
+  }
+
+  .rx-card-growth h3 {
+    margin: 0 0 0.2rem;
+    font-size: 0.8rem;
+  }
+
+  .rx-card-growth h3 small {
+    font-size: 0.62rem;
+  }
+
+  .rx-card-steps {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.2rem 0.7rem;
+  }
+
+  .rx-card-step {
+    grid-template-columns: 1.2rem 1fr;
+    gap: 0.3rem;
+  }
+
+  .rx-card-step-num {
+    width: 1.15rem;
+    height: 1.15rem;
+    font-size: 0.62rem;
+  }
+
+  .rx-card-step-title {
+    font-size: 0.72rem;
+  }
+
+  .rx-card-step-desc {
+    line-height: 1.15;
+    font-size: 0.6rem;
+  }
+
+  .rx-card-tools {
+    gap: 0.4rem;
+    margin: 0.3rem 0.9rem 0.2rem;
+  }
+
+  .rx-card-message,
+  .rx-card-toolbox {
+    padding: 0.3rem 0.45rem;
+  }
+
+  .rx-card-message {
+    font-size: 0.66rem;
+    line-height: 1.15;
+  }
+
+  .rx-card-toolbox h3 {
+    margin: 0 0 0.2rem;
+    font-size: 0.68rem;
+  }
+
+  .rx-card-toolbox ul {
+    line-height: 1.15;
+    font-size: 0.58rem;
+  }
+
+  .rx-card-footer {
+    padding: 0 0.9rem 0.15rem;
+    font-size: 0.54rem;
+  }
+
+  .rx-card-credit {
+    padding: 0.12rem 0.9rem;
+    font-size: 0.5rem;
   }
 }
 

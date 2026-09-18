@@ -5,7 +5,16 @@ import { getAdminSessionFromRequest } from "@/lib/auth";
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname === "/admin/login" || pathname === "/api/admin/login") {
+  const publicAdminPaths = new Set([
+    "/admin/login",
+    "/api/admin/login",
+    "/admin/forgot-password",
+    "/api/admin/password/forgot",
+    "/admin/reset-password",
+    "/api/admin/password/reset",
+  ]);
+
+  if (publicAdminPaths.has(pathname)) {
     return NextResponse.next();
   }
 

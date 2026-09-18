@@ -10,7 +10,7 @@ export function buildEmailSubject(result: AssessmentResult): string {
   return `디지털 역량 진단 결과 (${result.level}, ${formatScore(result.overallScore)}점)`;
 }
 
-export async function sendResultEmail(email: string, summary: string, subject: string): Promise<void> {
+async function sendEmail(to: string, subject: string, text: string): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM;
 
@@ -26,9 +26,9 @@ export async function sendResultEmail(email: string, summary: string, subject: s
     },
     body: JSON.stringify({
       from,
-      to: [email.trim()],
+      to: [to.trim()],
       subject,
-      text: summary,
+      text,
     }),
   });
 
@@ -36,4 +36,21 @@ export async function sendResultEmail(email: string, summary: string, subject: s
     const detail = await response.text();
     throw new Error(detail || "EMAIL_SEND_FAILED");
   }
+}
+
+export async function sendResultEmail(email: string, summary: string, subject: string): Promise<void> {
+  await sendEmail(email, subject, summary);
+}
+
+export async function sendAdminPasswordResetEmail(email: string, resetUrl: string): Promise<void> {
+  const text = [
+    "관리자 비밀번호 재설정을 요청하셨습니다.",
+    "",
+    "아래 링크에서 새 비밀번호를 설정해 주세요. (30분간 유효)",
+    resetUrl,
+    "",
+    "본인이 요청하지 않았다면 이 이메일을 무시해 주세요.",
+  ].join("\n");
+
+  await sendEmail(email, "디지털 역량 진단 관리자 비밀번호 재설정", text);
 }

@@ -1415,6 +1415,14 @@ main {
   text-align: center;
 }
 
+.mini-test-language-toggle {
+  margin-bottom: 0.75rem;
+  padding: 0.35rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-weight: 700;
+}
+
 .type-picker-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));

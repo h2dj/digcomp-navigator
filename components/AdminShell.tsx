@@ -9,10 +9,12 @@ const adminNavigation = [
   { href: "/admin/accounts", label: "관리자 계정" },
 ];
 
+const authPages = new Set(["/admin/login", "/admin/forgot-password", "/admin/reset-password"]);
+
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const isLoginPage = pathname === "/admin/login";
+  const isAuthPage = authPages.has(pathname);
 
   async function handleLogout() {
     await fetch("/api/admin/logout", { method: "POST" });
@@ -20,7 +22,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     router.refresh();
   }
 
-  if (isLoginPage) {
+  if (isAuthPage) {
     return <div className="admin-root">{children}</div>;
   }
 

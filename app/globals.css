@@ -2255,6 +2255,11 @@ main {
   width: min(100%, 420px);
 }
 
+.admin-login-footer-link {
+  margin: 1.25rem 0 0;
+  text-align: center;
+}
+
 .admin-form {
   display: grid;
   gap: 1rem;

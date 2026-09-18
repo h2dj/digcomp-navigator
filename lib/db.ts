@@ -51,6 +51,15 @@ export async function ensureSchema(): Promise<void> {
     )
   `;
   await sql`
+    CREATE TABLE IF NOT EXISTS admin_password_resets (
+      id TEXT PRIMARY KEY,
+      admin_id TEXT NOT NULL REFERENCES admin_accounts(id) ON DELETE CASCADE,
+      token_hash TEXT NOT NULL UNIQUE,
+      expires_at TIMESTAMPTZ NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `;
+  await sql`
     CREATE TABLE IF NOT EXISTS assessment_config (
       id TEXT PRIMARY KEY,
       config JSONB NOT NULL,

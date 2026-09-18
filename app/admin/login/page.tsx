@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, FormEvent, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
 function AdminLoginForm() {
@@ -72,6 +73,12 @@ function AdminLoginForm() {
             {loading ? "로그인 중..." : "로그인"}
           </button>
         </form>
+
+        <p className="muted admin-login-footer-link">
+          <Link className="text-button" href="/admin/forgot-password">
+            계정·비밀번호를 잊으셨나요?
+          </Link>
+        </p>
       </article>
     </section>
   );

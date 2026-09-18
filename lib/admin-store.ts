@@ -1,5 +1,12 @@
 import bcrypt from "bcryptjs";
+import { createHash, randomBytes } from "node:crypto";
 import { ensureSchema, getSql, isDatabaseConfigured } from "@/lib/db";
+
+const RESET_TOKEN_TTL_MS = 30 * 60 * 1000;
+
+function hashResetToken(token: string): string {
+  return createHash("sha256").update(token).digest("hex");
+}
 
 export type AdminAccount = {
   id: string;
@@ -123,6 +130,61 @@ export async function deleteAdminAccount(adminId: string): Promise<boolean> {
   `;
 
   return rows.length > 0;
+}
+
+export async function createPasswordResetToken(
+  email: string,
+): Promise<{ token: string; admin: AdminAccount } | null> {
+  const admin = await findAdminByEmail(email);
+  if (!admin) return null;
+
+  const sql = getSql();
+  if (!sql) return null;
+
+  const token = randomBytes(32).toString("hex");
+  const tokenHash = hashResetToken(token);
+  const id = crypto.randomUUID();
+  const expiresAt = new Date(Date.now() + RESET_TOKEN_TTL_MS).toISOString();
+
+  // 이전에 발급한 링크는 새 요청과 함께 무효화한다.
+  await sql`DELETE FROM admin_password_resets WHERE admin_id = ${admin.id}`;
+  await sql`
+    INSERT INTO admin_password_resets (id, admin_id, token_hash, expires_at, created_at)
+    VALUES (${id}, ${admin.id}, ${tokenHash}, ${expiresAt}, NOW())
+  `;
+
+  const { passwordHash: _passwordHash, ...account } = admin;
+  return { token, admin: account };
+}
+
+export async function resetAdminPassword(token: string, newPassword: string): Promise<boolean> {
+  if (!isDatabaseConfigured()) return false;
+
+  await ensureSchema();
+  const sql = getSql();
+  if (!sql) return false;
+
+  const tokenHash = hashResetToken(token);
+  const rows = await sql`
+    SELECT id, admin_id, expires_at
+    FROM admin_password_resets
+    WHERE token_hash = ${tokenHash}
+    LIMIT 1
+  `;
+
+  if (rows.length === 0) return false;
+
+  const row = rows[0] as { id: string; admin_id: string; expires_at: string | Date };
+  await sql`DELETE FROM admin_password_resets WHERE id = ${row.id}`;
+
+  if (new Date(row.expires_at).getTime() < Date.now()) {
+    return false;
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+  await sql`UPDATE admin_accounts SET password_hash = ${passwordHash} WHERE id = ${row.admin_id}`;
+
+  return true;
 }
 
 export async function ensureBootstrapAdmin(): Promise<void> {

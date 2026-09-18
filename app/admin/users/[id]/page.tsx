@@ -3,7 +3,10 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { formatScore, type AssessmentResult, type Profile } from "@/lib/scoring";
+import { AdminResultDetail } from "@/components/AdminResultDetail";
+import { GrowthLineChart } from "@/components/ScoreCharts";
+import { getDigitalTypeDefinition } from "@/data/digital-types";
+import { formatScore, getAssessmentType, type AssessmentResult, type Profile } from "@/lib/scoring";
 
 type UserDetail = {
   userId: string;
@@ -18,6 +21,7 @@ export default function AdminUserDetailPage() {
   const [user, setUser] = useState<UserDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [expandedResultId, setExpandedResultId] = useState<string | null>(null);
 
   const loadUser = useCallback(async () => {
     setLoading(true);
@@ -81,6 +85,11 @@ export default function AdminUserDetailPage() {
     );
   }
 
+  const latestResult = user.results[0] ?? null;
+  const latestDigitalTypeName = latestResult?.digitalType
+    ? getDigitalTypeDefinition(latestResult.digitalType.typeId).name
+    : null;
+
   return (
     <section className="admin-page">
       <div className="admin-page-header">
@@ -125,25 +134,86 @@ export default function AdminUserDetailPage() {
         </article>
 
         <article className="card">
-          <span className="eyebrow">Results</span>
-          <h2>진단 결과 ({user.results.length})</h2>
-          {user.results.length === 0 ? <p className="muted">저장된 진단 결과가 없습니다.</p> : null}
-          <ul className="admin-result-list">
-            {user.results.map((result) => (
-              <li key={result.id} className="admin-result-item">
-                <div>
-                  <strong>{formatScore(result.overallScore)} / 4.0</strong>
-                  <span className="level-badge">{result.level}</span>
-                  <p className="muted">{new Date(result.createdAt).toLocaleString("ko-KR")}</p>
-                </div>
-                <button className="text-button danger" type="button" onClick={() => void handleDeleteResult(result.id)}>
-                  삭제
-                </button>
-              </li>
-            ))}
-          </ul>
+          <span className="eyebrow">Overview</span>
+          <h2>요약</h2>
+          <dl className="admin-detail-list">
+            <div>
+              <dt>총 진단 수</dt>
+              <dd>{user.results.length}</dd>
+            </div>
+            <div>
+              <dt>최근 진단</dt>
+              <dd>
+                {latestResult
+                  ? `${new Date(latestResult.createdAt).toLocaleString("ko-KR")} · ${
+                      getAssessmentType(latestResult) === "deep" ? `심층(${latestResult.deepLevel})` : "기본"
+                    }`
+                  : "-"}
+              </dd>
+            </div>
+            <div>
+              <dt>최근 점수</dt>
+              <dd>{latestResult ? `${formatScore(latestResult.overallScore)} / 4.0 · ${latestResult.level}` : "-"}</dd>
+            </div>
+            <div>
+              <dt>최근 디지털 유형</dt>
+              <dd>{latestDigitalTypeName ?? "-"}</dd>
+            </div>
+          </dl>
         </article>
       </div>
+
+      <article className="card admin-section-card">
+        <span className="eyebrow">Results</span>
+        <h2>진단 결과 ({user.results.length})</h2>
+        {user.results.length === 0 ? <p className="muted">저장된 진단 결과가 없습니다.</p> : null}
+        <ul className="admin-result-list">
+          {user.results.map((result) => {
+            const isExpanded = expandedResultId === result.id;
+
+            return (
+              <li key={result.id} className="admin-result-item">
+                <div className="admin-result-row">
+                  <div>
+                    <strong>{formatScore(result.overallScore)} / 4.0</strong>{" "}
+                    <span className="level-badge">{result.level}</span>{" "}
+                    <span className="muted">
+                      {getAssessmentType(result) === "deep" ? `심층(${result.deepLevel})` : "기본"}
+                    </span>
+                    <p className="muted">{new Date(result.createdAt).toLocaleString("ko-KR")}</p>
+                  </div>
+                  <div className="admin-result-actions">
+                    <button
+                      className="text-button"
+                      type="button"
+                      onClick={() => setExpandedResultId(isExpanded ? null : result.id)}
+                    >
+                      {isExpanded ? "접기" : "상세보기"}
+                    </button>
+                    <button
+                      className="text-button danger"
+                      type="button"
+                      onClick={() => void handleDeleteResult(result.id)}
+                    >
+                      삭제
+                    </button>
+                  </div>
+                </div>
+
+                {isExpanded ? <AdminResultDetail result={result} /> : null}
+              </li>
+            );
+          })}
+        </ul>
+      </article>
+
+      {user.results.length >= 2 ? (
+        <article className="card">
+          <span className="eyebrow">Growth</span>
+          <h2>전체 진단 이력 추이</h2>
+          <GrowthLineChart history={user.results} />
+        </article>
+      ) : null}
     </section>
   );
 }

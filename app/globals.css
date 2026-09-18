@@ -2443,7 +2443,11 @@ main {
   gap: 0.75rem;
 }
 
-.admin-result-item,
+.admin-result-item {
+  padding: 0.9rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
 .admin-account-item {
   display: flex;
   align-items: center;
@@ -2451,6 +2455,63 @@ main {
   gap: 1rem;
   padding: 0.9rem 0;
   border-bottom: 1px solid var(--line);
+}
+
+.admin-result-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.admin-result-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  white-space: nowrap;
+}
+
+.admin-result-detail {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--line);
+}
+
+.admin-detail-list-inline {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.admin-competency-groups {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.admin-competency-group {
+  border: 1px solid var(--line);
+  border-radius: 0.9rem;
+  padding: 0.9rem 1rem;
+}
+
+.admin-competency-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.admin-competency-group-header h4 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.admin-digitaltype-summary {
+  border: 1px solid var(--line);
+  border-radius: 0.9rem;
+  padding: 0.9rem 1rem;
 }
 
 .admin-section-card {

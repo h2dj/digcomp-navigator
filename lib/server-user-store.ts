@@ -371,6 +371,9 @@ export type ListUsersFilters = {
   digitalTypeId?: string;
   /** true면 진단을 한 번이라도 완료한 이용자만 반환한다. */
   hasResults?: boolean;
+  /** 최근 진단일 기준 기간 필터. "YYYY-MM-DD" 형식, 각각 포함 범위(from 이상, to 이하)로 적용된다. */
+  resultDateFrom?: string;
+  resultDateTo?: string;
   sort?: ListUsersSort;
 };
 
@@ -391,6 +394,13 @@ function levelSynonyms(level: ProficiencyLevel): string[] {
   return legacy ? [level, legacy] : [level];
 }
 
+/** "YYYY-MM-DD" 다음 날 00:00:00Z를 반환한다(종료일을 포함하는 배타적 상한으로 사용). */
+function nextDayIso(dateStr: string): string {
+  const date = new Date(`${dateStr}T00:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() + 1);
+  return date.toISOString();
+}
+
 export async function listUsers(
   limit = 100,
   offset = 0,
@@ -408,6 +418,8 @@ export async function listUsers(
   const levelFilter = filters.level ? levelSynonyms(filters.level) : null;
   const digitalTypeFilter = filters.digitalTypeId?.trim() || null;
   const hasResultsFilter = filters.hasResults ?? false;
+  const dateFromFilter = filters.resultDateFrom?.trim() ? `${filters.resultDateFrom.trim()}T00:00:00.000Z` : null;
+  const dateToFilter = filters.resultDateTo?.trim() ? nextDayIso(filters.resultDateTo.trim()) : null;
   const orderBy = sortOrderByClauses[filters.sort ?? "updatedAt"];
 
   const rows = await sql`
@@ -435,6 +447,8 @@ export async function listUsers(
       AND (${emailFilter}::text IS NULL OR u.email ILIKE ${emailFilter})
       AND (${levelFilter}::text[] IS NULL OR lr.result->>'level' = ANY(${levelFilter}))
       AND (${digitalTypeFilter}::text IS NULL OR lr.result->'digitalType'->>'typeId' = ${digitalTypeFilter})
+      AND (${dateFromFilter}::timestamptz IS NULL OR lr.created_at >= ${dateFromFilter}::timestamptz)
+      AND (${dateToFilter}::timestamptz IS NULL OR lr.created_at < ${dateToFilter}::timestamptz)
     GROUP BY u.id, u.email, u.profile, u.updated_at, lr.created_at, lr.result
     HAVING (${hasResultsFilter}::boolean IS NOT TRUE OR COUNT(r.id) > 0)
     ORDER BY ${sql.unsafe(orderBy)}

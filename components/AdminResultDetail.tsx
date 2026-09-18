@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { digcompAreas } from "@/data/digcomp";
-import { getDigitalTypeDefinition } from "@/data/digital-types";
+import { getDigitalTypeDefinition, isDigitalTypeId } from "@/data/digital-types";
 import { getInterestTagLabel } from "@/data/interest-tags";
 import { AreaComparisonChart, RadarScoreChart } from "@/components/ScoreCharts";
 import { ResultHighlights } from "@/components/ResultHighlights";
@@ -19,7 +19,8 @@ const digitalTypeCategoryLabels = {
 export function AdminResultDetail({ result }: AdminResultDetailProps) {
   const assessmentType = getAssessmentType(result);
   const digitalType = result.digitalType;
-  const digitalTypeDefinition = digitalType ? getDigitalTypeDefinition(digitalType.typeId) : null;
+  const digitalTypeDefinition =
+    digitalType && isDigitalTypeId(digitalType.typeId) ? getDigitalTypeDefinition(digitalType.typeId) : null;
 
   return (
     <div className="admin-result-detail">

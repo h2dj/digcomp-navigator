@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { AdminResultDetail } from "@/components/AdminResultDetail";
 import { GrowthLineChart } from "@/components/ScoreCharts";
-import { getDigitalTypeDefinition } from "@/data/digital-types";
+import { getDigitalTypeDefinition, isDigitalTypeId } from "@/data/digital-types";
 import { formatScore, getAssessmentType, type AssessmentResult, type Profile } from "@/lib/scoring";
 
 type UserDetail = {
@@ -86,9 +86,10 @@ export default function AdminUserDetailPage() {
   }
 
   const latestResult = user.results[0] ?? null;
-  const latestDigitalTypeName = latestResult?.digitalType
-    ? getDigitalTypeDefinition(latestResult.digitalType.typeId).name
-    : null;
+  const latestDigitalTypeName =
+    latestResult?.digitalType && isDigitalTypeId(latestResult.digitalType.typeId)
+      ? getDigitalTypeDefinition(latestResult.digitalType.typeId).name
+      : null;
 
   return (
     <section className="admin-page">
